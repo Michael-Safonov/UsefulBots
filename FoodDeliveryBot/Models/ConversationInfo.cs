@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 
 namespace FoodDeliveryBot.Models
 {
-	public class UserInfo
+	public class ConversationInfo : Dictionary<string, object>
 	{
-		public OrderInfo Order { get; set; }
-		public List<Product> OrderedProducts { get; set; }
 	}
 }

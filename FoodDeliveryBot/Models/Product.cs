@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace FoodDeliveryBot.Models
 {
-	public class UserInfo
+	public class Product
 	{
-		public OrderInfo Order { get; set; }
-		public List<Product> OrderedProducts { get; set; }
+		public string Name { get; set; }
+		public string Desciption { get; set; }
+		public decimal Price { get; set; }
 	}
 }
