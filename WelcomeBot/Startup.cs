@@ -7,6 +7,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WelcomeBot.Models;
 
 namespace WelcomeBot
 {
@@ -39,11 +40,11 @@ namespace WelcomeBot
                 // caught here. To facillitate debugging, the exception is sent out, via Trace, 
                 // to the emulator. Trace activities are NOT displayed to users, so in addition
                 // an "Ooops" message is sent. 
-                options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
-                {
-                    await context.TraceActivity("EchoBot Exception", exception);
-                    await context.SendActivity("Sorry, it looks like something went wrong!");
-                }));
+                //options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
+                //{
+                //    await context.TraceActivity("EchoBot Exception", exception);
+                //    await context.SendActivity("Sorry, it looks like something went wrong!");
+                //}));
 
                 // The Memory Storage used here is for local bot debugging only. When the bot
                 // is restarted, anything stored in memory will be gone. 
@@ -62,7 +63,8 @@ namespace WelcomeBot
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureTableStorage("AzureTablesConnectionString", "TableName");
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
-                options.Middleware.Add(new ConversationState<EchoState>(dataStore));
+                options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
+                options.Middleware.Add(new UserState<UserInfo>(dataStore));
             });
         }
 
