@@ -59,7 +59,7 @@ namespace FoodDeliveryBot
 			var dialogs = new DialogSet();
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
-			{
+			{				
 				async (dc, args, next) =>
 				{
 					var menu = new List<string> { "Выбрать продукты", "Посмотреть статистику" , "Отменить заказ" };
@@ -97,6 +97,7 @@ namespace FoodDeliveryBot
 			});
 
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
+			dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
 			return dialogs;
 		}

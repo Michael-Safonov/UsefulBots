@@ -31,7 +31,7 @@ namespace FoodDeliveryBot.Dialogs
 		public static OrderDialog Instance { get; } = new OrderDialog();
 		private OrderDialog() : base(Id)
 		{
-			//todo: Добавить диалог выбора магазина. Подгружать из БД
+			//todo: Добавить диалог выбора магазина. Подгружать из БД			
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				async (dc, args, next) =>
@@ -45,13 +45,16 @@ namespace FoodDeliveryBot.Dialogs
 				async (dc, args, next) =>
 				{
 					var choice = (FoundChoice)args["Value"];
-					 if (OrderMenu[choice.Index].DialogName == "newOrder")
+					if (OrderMenu[choice.Index].DialogName == "newOrder")
 					{
 						var userState = UserState<UserInfo>.Get(dc.Context);
 						var newOrder = new OrderInfo {
 							OrderId = System.Guid.NewGuid().ToString()
 						};
-						 userState.Order = newOrder;
+						userState.Order = newOrder;
+						
+						await dc.Begin(DeliveryServiceDialog.Id);
+				
 					}
 					else
 					{
@@ -86,6 +89,7 @@ namespace FoodDeliveryBot.Dialogs
 					userState.Order = (OrderInfo)orderInfo;
 				}
 			});
+			this.Dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
