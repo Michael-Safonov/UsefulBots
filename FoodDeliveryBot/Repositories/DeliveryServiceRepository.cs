@@ -1,13 +1,12 @@
-﻿namespace FoodDeliveryBot.Repositories
+﻿using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
+using LiteDB;
+
+namespace FoodDeliveryBot.Repositories
 {
-    using System.Threading.Tasks;
-    using LiteDB;
-
-    using FoodDeliveryBot.Models;
-
-    public class DeliveryServiceInfoRepository : BaseRepository<DeliveryService>
+    public class DeliveryServiceRepository : BaseRepository<DeliveryService>
     {
-        public DeliveryServiceInfoRepository(string collectionName) : base(collectionName)
+        public DeliveryServiceRepository(string collectionName) : base(collectionName)
         {
         }
 

@@ -79,8 +79,7 @@ namespace FoodDeliveryBot
 			}
 
 			app.UseDefaultFiles()
-				.UseStaticFiles()
-				.UseBotFramework();
+				.UseStaticFiles();
 
 			app.UseMvc(routes =>
 			{
@@ -88,6 +87,8 @@ namespace FoodDeliveryBot
 					name: "default",
 					template: "{controller=Home}/{action=Index}/{id?}");
 			});
+
+			app.UseBotFramework();
 		}
 	}
 }
