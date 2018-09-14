@@ -42,6 +42,7 @@ namespace FoodDeliveryBot.Dialogs
 
 		private async Task ChoiceDeliveryServiceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
+			//todo: Здесь нужно взять магазы из бызы
 			var choiceList = this.deliveryServicesList.Select(ds => ds.Name).ToList();
 			await dc.Prompt("choicePrompt", "Откуда закажем?", new ChoicePromptOptions
 			{
@@ -55,8 +56,8 @@ namespace FoodDeliveryBot.Dialogs
 			var choice = (FoundChoice)args["Value"];
 
 			var deliveryService = deliveryServicesList.SingleOrDefault(ds => ds.Name == choice.Value);
-			var userState = UserState<UserInfo>.Get(dc.Context);
-			userState.OrderDeliveryService = deliveryService;
+			var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
+			sessionInfo.OrderSession.DeliveryService = deliveryService;
 		}
 	}
 }

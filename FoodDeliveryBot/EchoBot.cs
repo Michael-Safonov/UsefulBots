@@ -27,7 +27,7 @@ namespace FoodDeliveryBot
 				//states.Insert(newMessage);
 				//var messages = db.GetCollection<ChatMessage>(nameof(ChatMessage)).FindAll();
 
-				var userInfo = UserState<UserInfo>.Get(context);
+				var sessionInfo = UserState<SessionInfo>.Get(context);
 				var conversationInfo = ConversationState<ConversationInfo>.Get(context);
 
 				// Establish dialog state from the conversation state.
@@ -41,9 +41,10 @@ namespace FoodDeliveryBot
 				if (!context.Responded)
 				{
 					//Если еще нет информации о заказе, надо ее получить
-					if (string.IsNullOrWhiteSpace(userInfo?.Order?.OrderId))
+					//if (string.IsNullOrWhiteSpace(userInfo?.Order?.OrderId))
+					if (sessionInfo.OrderSession?.OrderSessionId == null)
 					{
-						await dc.Begin(OrderDialog.Id);
+						await dc.Begin(OrderSessionDialog.Id);
 					}
 					// Otherwise, start our bot's main dialog.
 					else
@@ -79,9 +80,8 @@ namespace FoodDeliveryBot
 							//await dc.Begin(Stats.Id);
 							break;
 						case "отменить заказ":
-							var userState = UserState<UserInfo>.Get(dc.Context);
-							userState.Order = null;
-							userState.OrderedProducts = null;
+							var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
+							sessionInfo.OrderSession = null;
 							break;
 						default:
 							await dc.Context.SendActivity("Не понимаю.");
@@ -97,7 +97,7 @@ namespace FoodDeliveryBot
 			});
 
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
-			dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
+			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
 			return dialogs;
 		}
