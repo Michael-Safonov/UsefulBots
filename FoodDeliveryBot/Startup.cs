@@ -65,7 +65,7 @@ namespace FoodDeliveryBot
 				// IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
 				options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-				options.Middleware.Add(new UserState<UserInfo>(dataStore));
+				options.Middleware.Add(new UserState<SessionInfo>(dataStore));
 			});
 
 			services.AddMvc();

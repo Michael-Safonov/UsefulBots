@@ -61,14 +61,14 @@ namespace FoodDeliveryBot.Dialogs
 					{
 						if (cart.Count > 0)
 						{
-							var userState = UserState<UserInfo>.Get(dc.Context);
-							userState.OrderedProducts = cart;
-							//todo: Просто для примера, потом убрать все в статс
-							var total = cart.Sum(x => x.Price);
-							var message = cart.Select(x => $"{x.Name} - {x.Price}");
-							await dc.Context.SendActivity($"Order ID {userState.Order.OrderId}{Environment.NewLine}" +
-								$"{string.Join(Environment.NewLine, message.ToArray())}{Environment.NewLine}{total}");
-							 await dc.End();
+							//var userState = UserState<UserInfo>.Get(dc.Context);
+							//userState.OrderedProducts = cart;
+							////todo: Просто для примера, потом убрать все в статс
+							//var total = cart.Sum(x => x.Price);
+							//var message = cart.Select(x => $"{x.Name} - {x.Price}");
+							//await dc.Context.SendActivity($"Order ID {userState.Order.OrderId}{Environment.NewLine}" +
+							//	$"{string.Join(Environment.NewLine, message.ToArray())}{Environment.NewLine}{total}");
+							// await dc.End();
 						}
 						else
 						{
