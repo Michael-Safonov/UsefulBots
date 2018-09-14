@@ -8,24 +8,21 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
 using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Repositories;
 
 namespace FoodDeliveryBot.Dialogs
 {
 	public class DeliveryServiceDialog : DialogContainer
 	{
-		private readonly List<DeliveryService> deliveryServicesList = new List<DeliveryService>()
-		{
-			new DeliveryService() { Id = 1, Name = "ШаурмаKing" },
-			new DeliveryService() { Id = 2, Name= "Самурай" },
-			new DeliveryService() { Id = 3, Name= "Автосуши" }
-		};
+		private readonly DeliveryServiceRepository deliveryServiceRepository;
 
 		public const string Id = "choiceDeliveryService";
 
-		public static DeliveryServiceDialog Instance { get; } = new DeliveryServiceDialog();
+		public static DeliveryServiceDialog Instance { get; } = new DeliveryServiceDialog(new DeliveryServiceRepository("DeliveryServices"));
 
-		private DeliveryServiceDialog() : base(Id)
+		private DeliveryServiceDialog(DeliveryServiceRepository deliveryServiceRepository) : base(Id)
 		{
+			this.deliveryServiceRepository = deliveryServiceRepository;
 			InitDeliveryServiceDialog();
 		}
 
@@ -42,8 +39,10 @@ namespace FoodDeliveryBot.Dialogs
 
 		private async Task ChoiceDeliveryServiceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
-			//todo: Здесь нужно взять магазы из бызы
-			var choiceList = this.deliveryServicesList.Select(ds => ds.Name).ToList();
+			//todo: сделать полем класса?
+			var deliveryServices = await this.deliveryServiceRepository.GetAll();
+
+			var choiceList = deliveryServices.Select(ds => ds.Name).ToList();
 			await dc.Prompt("choicePrompt", "Откуда закажем?", new ChoicePromptOptions
 			{
 				Choices = ChoiceFactory.ToChoices(choiceList),
@@ -55,7 +54,10 @@ namespace FoodDeliveryBot.Dialogs
 		{
 			var choice = (FoundChoice)args["Value"];
 
-			var deliveryService = deliveryServicesList.SingleOrDefault(ds => ds.Name == choice.Value);
+			//todo: тягали все сервисы в методе выше
+			// Получаем из БД нужный сервис доставки
+			var deliveryService = await this.deliveryServiceRepository.GetByName(choice.Value);
+			
 			var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 			sessionInfo.OrderSession.DeliveryService = deliveryService;
 		}

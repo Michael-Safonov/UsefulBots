@@ -1,4 +1,5 @@
 ﻿using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Repositories;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
@@ -25,12 +26,17 @@ namespace FoodDeliveryBot.Dialogs
 			new StartMenuItem() { Description = "Существующий заказ", DialogName = "existOrder" },			
 		};
 
+		private readonly OrderSessionRepository orderSessionRepository;
+
 		public const string Id = "orderSession";
 
-		public static OrderSessionDialog Instance { get; } = new OrderSessionDialog();
+		// public OrderSessionRepository OrderSessionRepository { get; set; }
 
-		private OrderSessionDialog() : base(Id)
+		public static OrderSessionDialog Instance { get; } = new OrderSessionDialog(new OrderSessionRepository("OrderSessions"));
+
+		private OrderSessionDialog(OrderSessionRepository orderSessionRepository) : base(Id)
 		{
+			this.orderSessionRepository = orderSessionRepository;
 			InitOrderSessionDialog();
 		}
 
@@ -76,6 +82,7 @@ namespace FoodDeliveryBot.Dialogs
 				};
 
 				// todo: записываем объект в БД
+				await orderSessionRepository.Insert(newOrder);
 
 				// Получаем инфо о сессии из стейта диалога
 				var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
