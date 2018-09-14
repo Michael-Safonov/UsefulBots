@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 namespace FoodDeliveryBot.Dialogs
 {
 	public class JoinOrderDialog : DialogContainer
-	{
-		//todo: убрать когда сделаем взаимодействие с базой
-		private const bool orderSessionExistFlag = true;
-
+	{	
 		public const string Id = "joinOrder";
 
 		public static JoinOrderDialog Instance { get; } = new JoinOrderDialog();
@@ -22,11 +19,12 @@ namespace FoodDeliveryBot.Dialogs
 
 		private void InitJoinOrderDialog()
 		{
-			this.Dialogs.Add("existOrder", new WaterfallStep[]
+			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				GetOrderPincodeStep,
 				CheckOrderPincodeStep
 			});
+			this.Dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -39,7 +37,7 @@ namespace FoodDeliveryBot.Dialogs
 		{
 			var pincode = args["Value"] as string;
 			//todo: Найти заказ в БД по пин-коду
-			if (orderSessionExistFlag)
+			if (pincode == "1111")
 			{
 				await dc.Begin(ProductsDialog.Id);
 			}

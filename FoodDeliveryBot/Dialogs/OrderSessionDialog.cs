@@ -27,22 +27,6 @@ namespace FoodDeliveryBot.Dialogs
 
 		public const string Id = "orderSession";
 
-		//private const string OrderKey = nameof(OrderDialog);
-
-		//public static List<StartChoice> OrderMenu { get; } = new List<StartChoice>
-		//{
-		//	new StartChoice { Description = "Новый заказ", DialogName = "newOrder" },
-		//	new StartChoice { Description = "Существующий заказ", DialogName = "existOrder" },
-		//};
-
-		//public static List<string> MainMenu
-		//{
-		//	get
-		//	{
-		//		return OrderMenu.Select(x => x.Description).ToList();
-		//	}
-		//}
-
 		public static OrderSessionDialog Instance { get; } = new OrderSessionDialog();
 
 		private OrderSessionDialog() : base(Id)
@@ -102,8 +86,7 @@ namespace FoodDeliveryBot.Dialogs
 			}
 			else
 			{
-				await dc.Begin(JoinOrderDialog.Id, dc.ActiveDialog.State);
-				// await dc.Begin(JoinOrderDialog.Id);
+				await dc.Begin(JoinOrderDialog.Id);
 			}
 		}
 

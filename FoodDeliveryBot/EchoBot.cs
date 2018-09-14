@@ -44,7 +44,7 @@ namespace FoodDeliveryBot
 					//if (string.IsNullOrWhiteSpace(userInfo?.Order?.OrderId))
 					if (sessionInfo.OrderSession?.OrderSessionId == null)
 					{
-						await dc.Begin(OrderDialog.Id);
+						await dc.Begin(OrderSessionDialog.Id);
 					}
 					// Otherwise, start our bot's main dialog.
 					else
@@ -97,7 +97,7 @@ namespace FoodDeliveryBot
 			});
 
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
-			dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
+			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
 			return dialogs;
 		}
