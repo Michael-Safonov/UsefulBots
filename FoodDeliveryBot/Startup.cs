@@ -1,4 +1,4 @@
-﻿using System;
+﻿using FoodDeliveryBot.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder.BotFramework;
@@ -7,7 +7,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using FoodDeliveryBot.Models;
+using System;
 
 namespace FoodDeliveryBot
 {
@@ -66,6 +66,8 @@ namespace FoodDeliveryBot
 				options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
 				options.Middleware.Add(new UserState<UserInfo>(dataStore));
 			});
+
+			services.AddMvc();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +81,13 @@ namespace FoodDeliveryBot
 			app.UseDefaultFiles()
 				.UseStaticFiles()
 				.UseBotFramework();
+
+			app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					name: "default",
+					template: "{controller=Home}/{action=Index}/{id?}");
+			});
 		}
 	}
 }
