@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using FoodDeliveryBot.Dialogs;
+using FoodDeliveryBot.Models;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using FoodDeliveryBot.Dialogs;
-using FoodDeliveryBot.Models;
 
 namespace FoodDeliveryBot
 {
@@ -22,6 +21,12 @@ namespace FoodDeliveryBot
 		{
 			if (context.Activity.Type is ActivityTypes.Message)
 			{
+				// example of using DB
+				//var db = DbManager.Instance;
+				// var states = db.GetCollection<ChatMessage>(nameof(ChatMessage));
+				//states.Insert(newMessage);
+				//var messages = db.GetCollection<ChatMessage>(nameof(ChatMessage)).FindAll();
+
 				var userInfo = UserState<UserInfo>.Get(context);
 				var conversationInfo = ConversationState<ConversationInfo>.Get(context);
 
@@ -54,7 +59,7 @@ namespace FoodDeliveryBot
 			var dialogs = new DialogSet();
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
-			{
+			{				
 				async (dc, args, next) =>
 				{
 					var menu = new List<string> { "Выбрать продукты", "Посмотреть статистику" , "Отменить заказ" };
@@ -92,8 +97,16 @@ namespace FoodDeliveryBot
 			});
 
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
+			dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
 			return dialogs;
+		}
+
+		private class ChatMessage
+		{
+			public int Id { get; set; }
+			public DateTime DateTime { get; set; }
+			public string Text { get; set; }
 		}
 	}
 }
