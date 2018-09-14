@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using FoodDeliveryBot.Repositories;
 
 namespace FoodDeliveryBot
 {
@@ -68,7 +69,12 @@ namespace FoodDeliveryBot
 			});
 
 			services.AddMvc();
-		}
+            
+		    services.AddTransient<DeliveryServiceRepository>(provider => new DeliveryServiceRepository("DeliveryServices"));
+		    services.AddTransient<OrderSessionRepository>(provider => new OrderSessionRepository("OrderSessions"));
+		    services.AddTransient<UserOrderRepository>(provider => new UserOrderRepository("UserOrders"));
+
+        }
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
