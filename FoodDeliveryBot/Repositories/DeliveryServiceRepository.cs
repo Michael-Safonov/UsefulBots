@@ -29,5 +29,10 @@ namespace FoodDeliveryBot.Repositories
 
             return result;
         }
+
+        public async Task<DeliveryService> GetByName(string name)
+        {
+            return await Task.FromResult(collection.FindOne(s => s.Name == name));
+        }
     }
 }
