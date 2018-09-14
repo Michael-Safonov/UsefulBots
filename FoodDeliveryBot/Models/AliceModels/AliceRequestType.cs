@@ -2,7 +2,10 @@
 {
 	public enum AliceRequestType
 	{
+		// обычное сообщение
 		SimpleUtterance,
+
+		// нажата кнопка
 		ButtonPressed
 	}
 }

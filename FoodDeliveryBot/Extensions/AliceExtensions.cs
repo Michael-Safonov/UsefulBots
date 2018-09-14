@@ -14,7 +14,8 @@ namespace FoodDeliveryBot.Extensions
 			{
 				Text = text,
 				Tts = text,
-				EndSession = endSession
+				EndSession = endSession,
+				Buttons = buttons
 			},
 			Session = req.Session
 		};
