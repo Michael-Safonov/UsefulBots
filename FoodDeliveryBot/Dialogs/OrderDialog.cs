@@ -47,13 +47,13 @@ namespace FoodDeliveryBot.Dialogs
 					var choice = (FoundChoice)args["Value"];
 					if (OrderMenu[choice.Index].DialogName == "newOrder")
 					{
-						var userState = UserState<UserInfo>.Get(dc.Context);
-						var newOrder = new OrderInfo {
-							OrderId = System.Guid.NewGuid().ToString()
-						};
-						userState.Order = newOrder;
+						//var userState = UserState<UserInfo>.Get(dc.Context);
+						//var newOrder = new OrderInfo {
+						//	OrderId = System.Guid.NewGuid().ToString()
+						//};
+						//userState.Order = newOrder;
 						
-						await dc.Begin(DeliveryServiceDialog.Id);
+						//await dc.Begin(DeliveryServiceDialog.Id);
 				
 					}
 					else
@@ -81,12 +81,12 @@ namespace FoodDeliveryBot.Dialogs
 					await dc.Prompt("textPrompt", "Введите идентификатор нотификации:");
 				},
 				async (dc, args, next) => {
-					var notificationId = args["Value"] as string;
-					var orderInfo = dc.ActiveDialog.State[OrderKey];
-					((OrderInfo)orderInfo).NotificationId = notificationId;
-					 dc.ActiveDialog.State[OrderKey] = (OrderInfo)orderInfo;
-					var userState = UserState<UserInfo>.Get(dc.Context);
-					userState.Order = (OrderInfo)orderInfo;
+					//var notificationId = args["Value"] as string;
+					//var orderInfo = dc.ActiveDialog.State[OrderKey];
+					//((OrderInfo)orderInfo).NotificationId = notificationId;
+					// dc.ActiveDialog.State[OrderKey] = (OrderInfo)orderInfo;
+					//var userState = UserState<UserInfo>.Get(dc.Context);
+					//userState.Order = (OrderInfo)orderInfo;
 				}
 			});
 			this.Dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);
