@@ -6,10 +6,10 @@ namespace FoodDeliveryBot.Controllers
 {
 	public class AliceController : Controller
 	{
-		[HttpPost("/alice")]
+		[HttpPost]
 		public AliceResponse WebHook([FromBody] AliceRequest req)
 		{
-			return req.Reply("Привет");
+			return req.Reply("Привет! Я FoodBoy. Хочешь заказать покушать?");
 		}
 	}
 }
