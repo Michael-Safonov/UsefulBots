@@ -13,11 +13,11 @@ namespace FoodDeliveryBot.Dialogs
 {
 	public class DeliveryServiceDialog : DialogContainer
 	{
-		private readonly List<DeliveryServiceInfo> deliveryServicesList = new List<DeliveryServiceInfo>()
+		private readonly List<DeliveryService> deliveryServicesList = new List<DeliveryService>()
 		{
-			new DeliveryServiceInfo() { Id = 1, Name = "ШаурмаKing" },
-			new DeliveryServiceInfo() { Id = 2, Name= "Самурай" },
-			new DeliveryServiceInfo() { Id = 3, Name= "Автосуши" }
+			new DeliveryService() { Id = 1, Name = "ШаурмаKing" },
+			new DeliveryService() { Id = 2, Name= "Самурай" },
+			new DeliveryService() { Id = 3, Name= "Автосуши" }
 		};
 
 		public const string Id = "choiceDeliveryService";

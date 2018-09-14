@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace FoodDeliveryBot.Models
 {
-	public class DeliveryServiceInfo
+	public class DeliveryService
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }

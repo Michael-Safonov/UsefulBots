@@ -87,6 +87,8 @@ namespace FoodDeliveryBot.Dialogs
 					{
 						cart.Add(option);
 						 var total = cart.Sum(x => x.Price);
+						//берем инфу по оредру
+						//
 						await dc.Context.SendActivity($"Добавлена {option.Name} (${option.Price:0.00})." +
 							Environment.NewLine + Environment.NewLine +
 							$"Еекущий заказ на сумму ${total:0.00}.");

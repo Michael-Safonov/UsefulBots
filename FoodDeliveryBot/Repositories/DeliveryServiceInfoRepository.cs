@@ -5,13 +5,13 @@
 
     using FoodDeliveryBot.Models;
 
-    public class DeliveryServiceInfoRepository : BaseRepository<DeliveryServiceInfo>
+    public class DeliveryServiceInfoRepository : BaseRepository<DeliveryService>
     {
         public DeliveryServiceInfoRepository(string collectionName) : base(collectionName)
         {
         }
 
-        public override async Task<BsonValue> Insert(DeliveryServiceInfo entity)
+        public override async Task<BsonValue> Insert(DeliveryService entity)
         {
             var result = await base.Insert(entity);
 
@@ -21,7 +21,7 @@
             return result;
         }
 
-        public override async Task<bool> Upsert(DeliveryServiceInfo entity)
+        public override async Task<bool> Upsert(DeliveryService entity)
         {
             var result = await base.Upsert(entity);
 
