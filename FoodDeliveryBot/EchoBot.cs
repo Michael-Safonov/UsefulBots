@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using FoodDeliveryBot.Db;
 using FoodDeliveryBot.Dialogs;
 using FoodDeliveryBot.Models;
 using Microsoft.Bot;
@@ -24,13 +22,10 @@ namespace FoodDeliveryBot
 			if (context.Activity.Type is ActivityTypes.Message)
 			{
 				// example of using DB
-				var db = DbManager.Instance;
-				var states = db.GetCollection<ChatMessage>(nameof(ChatMessage));
+				//var db = DbManager.Instance;
+				// var states = db.GetCollection<ChatMessage>(nameof(ChatMessage));
 				//states.Insert(newMessage);
-				var messages = db.GetCollection<ChatMessage>(nameof(ChatMessage)).FindAll();
-				var lastMessage = db.GetCollection<ChatMessage>(nameof(ChatMessage)).FindById(messages.Last().Id);
-
-				await context.SendActivity($"Your last message: {lastMessage.Text}");
+				//var messages = db.GetCollection<ChatMessage>(nameof(ChatMessage)).FindAll();
 
 				var userInfo = UserState<UserInfo>.Get(context);
 				var conversationInfo = ConversationState<ConversationInfo>.Get(context);
