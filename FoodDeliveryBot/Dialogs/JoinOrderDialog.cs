@@ -1,5 +1,6 @@
 ﻿using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
+using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -41,13 +42,11 @@ namespace FoodDeliveryBot.Dialogs
 		private async Task CheckOrderPincodeStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var pincode = args["Value"] as string;
-
-            OrderSession orderSession = null;
-
-            orderSession = await this.orderSessionRepository.GetByPinCode(pincode);
+            var orderSession = await this.orderSessionRepository.GetByPinCode(pincode);
 
             if (orderSession != null)
 			{
+				UserState<SessionInfo>.Get(dc.Context).OrderSession = orderSession;
 				await dc.Begin(ProductsDialog.Id);
 			}
 			else
