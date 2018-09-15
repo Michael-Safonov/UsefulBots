@@ -30,8 +30,6 @@ namespace FoodDeliveryBot.Dialogs
 
 		public const string Id = "orderSession";
 
-		// public OrderSessionRepository OrderSessionRepository { get; set; }
-
 		public static OrderSessionDialog Instance { get; } = new OrderSessionDialog(new OrderSessionRepository("OrderSessions"));
 
 		private OrderSessionDialog(OrderSessionRepository orderSessionRepository) : base(Id)

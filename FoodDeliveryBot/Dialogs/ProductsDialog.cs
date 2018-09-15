@@ -18,29 +18,12 @@ namespace FoodDeliveryBot.Dialogs
 		public const string Id = "productsDialog";
 		public const string OrderedProductsList = "orderedProductsList";
 		public static ProductsDialog Instance { get; } = new ProductsDialog();
-		private readonly List<Product> Products = new List<Product>() {
-			//todo: Получать продукты из бд. По Id заказа определять продавашку и тут подгрузить его продукты.
-			new Product { Name = "Classic", Desciption = "Classic shavuha", Price = 120m},
-			new Product { Name = "Non classic", Desciption = "Non classic shavuha", Price = 150m}
-		};
 
         private readonly List<string> Actions = new List<string>
         {
             "Завершить",
             "Отменить",
         };
-
-		//private List<string> MainMenu
-		//{
-		//	get
-		//	{
-		//	    var menuItems = Products.Select(x => x.Name).ToList();
-
-  //              menuItems.AddRange(this.Actions);
-
-  //              return menuItems;
-		//	}
-		//}
 
 		private ProductsDialog() : base(Id)
 		{
