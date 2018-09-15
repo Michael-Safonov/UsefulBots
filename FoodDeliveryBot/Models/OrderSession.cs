@@ -14,6 +14,5 @@ namespace FoodDeliveryBot.Models
 		public string OwnerUserId { get; set; }
 
 		public List<UserOrder> UserOrders { get; set; }
-
 	}
 }
