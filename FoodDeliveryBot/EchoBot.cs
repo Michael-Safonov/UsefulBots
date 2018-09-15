@@ -60,7 +60,7 @@ namespace FoodDeliveryBot
 		private static DialogSet ComposeMainDialog()
 		{
 			var dialogs = new DialogSet();
-			var userOrderActions = new List<string> { "Выбор продуктов", "Статистика", "Отменить заказ" };
+			var userOrderActions = new List<string> { "Выбор продуктов", "Статистика", "Отменить заказ", "Завершить заказ" };
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
 			{				
@@ -89,6 +89,11 @@ namespace FoodDeliveryBot
 						var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 						sessionInfo.OrderSession = null;
 					}
+					else if (choice.Value == userOrderActions[3])
+					{
+						await dc.Begin(EndOrderSessionDialog.Id);
+						//await next();
+					}
 					else
 					{
 						await dc.Context.SendActivity("Не понимаю.");
@@ -105,6 +110,7 @@ namespace FoodDeliveryBot
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
 			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
+			dialogs.Add(EndOrderSessionDialog.Id, EndOrderSessionDialog.Instance);
 			dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 			return dialogs;
 		}
