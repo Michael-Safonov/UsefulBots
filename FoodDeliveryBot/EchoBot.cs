@@ -7,7 +7,9 @@ using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
+using Microsoft.Recognizers.Text;
 
 namespace FoodDeliveryBot
 {
@@ -58,35 +60,44 @@ namespace FoodDeliveryBot
 		private static DialogSet ComposeMainDialog()
 		{
 			var dialogs = new DialogSet();
+			var userOrderActions = new List<string> { "Выбор продуктов", "Статистика", "Отменить заказ", "Завершить заказ" };
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
 			{				
 				async (dc, args, next) =>
 				{
-					var menu = new List<string> { "Выбрать продукты", "Посмотреть статистику" , "Отменить заказ" };
-					await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
+					await dc.Prompt("choicePrompt", "Выберите действие:", new ChoicePromptOptions
+					{
+						Choices = ChoiceFactory.ToChoices(userOrderActions),
+						RetryPromptActivity = MessageFactory.SuggestedActions(userOrderActions, "Пожалуйста, выберите действие") as Activity,
+					});
 				},
 				async (dc, args, next) =>
 				{
-					var result = (args["Activity"] as Activity)?.Text?.Trim().ToLowerInvariant();
-					switch (result)
+					var choice = (FoundChoice)args["Value"];
+					if (choice.Value == userOrderActions[0])
 					{
-						//todo: в кнстанты или nameof
-						case "выбрать продукты":
-							await dc.Begin(ProductsDialog.Id);
-							break;
-						case "посмотреть статистику":
-							//todo: добавить просмотр статистики
-							//await dc.Begin(Stats.Id);
-							break;
-						case "отменить заказ":
-							var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
-							sessionInfo.OrderSession = null;
-							break;
-						default:
-							await dc.Context.SendActivity("Не понимаю.");
-							await next();
-							break;
+						await dc.Begin(ProductsDialog.Id);
+					}
+					else if (choice.Value == userOrderActions[1])
+					{
+						//реализовать вывод статистики
+						await next();
+					}
+					else if (choice.Value == userOrderActions[2])
+					{
+						var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
+						sessionInfo.OrderSession = null;
+					}
+					else if (choice.Value == userOrderActions[3])
+					{
+						await dc.Begin(EndOrderSessionDialog.Id);
+						//await next();
+					}
+					else
+					{
+						await dc.Context.SendActivity("Не понимаю.");
+						await next();
 					}
 				},
 				async (dc, args, next) =>
@@ -99,6 +110,8 @@ namespace FoodDeliveryBot
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
 			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
+			dialogs.Add(EndOrderSessionDialog.Id, EndOrderSessionDialog.Instance);
+			dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 			return dialogs;
 		}
 
