@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using FoodDeliveryBot.Models;
 using LiteDB;
 
@@ -26,6 +28,11 @@ namespace FoodDeliveryBot.Repositories
             collection.EnsureIndex(e => e.UserId);
 
             return result;
+        }
+
+        public async Task<IEnumerable<UserOrder>> GetBySessionId(Guid sessionId)
+        {
+            return await Task.FromResult(collection.Find(uo => uo.SessionId == sessionId));
         }
     }
 }
