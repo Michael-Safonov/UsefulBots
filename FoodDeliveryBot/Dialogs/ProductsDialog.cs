@@ -47,7 +47,7 @@ namespace FoodDeliveryBot.Dialogs
                         Title = x.Name,
                         Images = new List<CardImage>() { new CardImage("https://tashirpizza.ru/images/products/49-319.jpg") },
                         Text = x.Name,
-                        Buttons = new List<CardAction> { new CardAction { Title = $"{x.Name} ({x.Price})", Value = x.Name, Type = ActionTypes.PostBack } }
+                        Buttons = new List<CardAction> { new CardAction { Title = $"{x.Name}", Value = x.Name, Type = ActionTypes.PostBack } }
                     }.ToAttachment()).ToList();
 
                     await dc.Context.SendActivity(MessageFactory.Carousel(products));
