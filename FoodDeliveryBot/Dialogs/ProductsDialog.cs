@@ -9,6 +9,7 @@ using FoodDeliveryBot.Models;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Schema;
 using System;
+using FoodDeliveryBot.Repositories;
 using Microsoft.Bot.Builder.Adapters;
 
 namespace FoodDeliveryBot.Dialogs
@@ -17,16 +18,20 @@ namespace FoodDeliveryBot.Dialogs
 	{
 		public const string Id = "productsDialog";
 		public const string OrderedProductsList = "orderedProductsList";
-		public static ProductsDialog Instance { get; } = new ProductsDialog();
+		public static ProductsDialog Instance { get; } = new ProductsDialog(new UserOrderRepository("UserOrders"));
 
-        private readonly List<string> Actions = new List<string>
+
+	    private readonly UserOrderRepository userOrderRepository;
+        private readonly List<string> _actions = new List<string>
         {
             "Завершить",
             "Отменить",
         };
 
-		private ProductsDialog() : base(Id)
+		private ProductsDialog(UserOrderRepository userOrderRepository) : base(Id)
 		{
+		    this.userOrderRepository = userOrderRepository;
+
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				async (dc, args, next) =>
@@ -60,19 +65,29 @@ namespace FoodDeliveryBot.Dialogs
 					{
 						if (cart.Count > 0)
 						{
-							//var userState = UserState<UserInfo>.Get(dc.Context);
-							//userState.OrderedProducts = cart;
-							////todo: Просто для примера, потом убрать все в статс
-							//var total = cart.Sum(x => x.Price);
-							//var message = cart.Select(x => $"{x.Name} - {x.Price}");
-							//await dc.Context.SendActivity($"Order ID {userState.Order.OrderId}{Environment.NewLine}" +
-							//	$"{string.Join(Environment.NewLine, message.ToArray())}{Environment.NewLine}{total}");
-							// await dc.End();
+						    var sessioninfo = UserState<SessionInfo>.Get(dc.Context);
+                            
+                            var userOrder = new UserOrder
+                            {
+                                UserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId"),
+                                SessionId = sessioninfo.OrderSession.OrderSessionId,
+                                Products = cart,
+                            };
+
+						    // sessioninfo.UserOrder = userOrder;
+
+						    await this.userOrderRepository.Insert(userOrder);
+
+                            await dc.Context.SendActivity("Заказ завершен. Спасибо!");
+
+						    sessioninfo.UserOrder = null;
+                            sessioninfo.OrderSession = null;
+
+						    await dc.End();
 						}
-						else
+                        else
 						{
-							await dc.Context.SendActivity(
-								"Вы не выбрали ни одного продукта.");
+							await dc.Context.SendActivity("Вы не выбрали ни одного продукта.");
 							await dc.Replace(Id);
 						}
 					}
@@ -108,7 +123,7 @@ namespace FoodDeliveryBot.Dialogs
 	    {
 	        var menuItems = products.Select(x => x.Name).ToList();
 
-	        menuItems.AddRange(this.Actions);
+	        menuItems.AddRange(this._actions);
 
 	        return menuItems;
         }
