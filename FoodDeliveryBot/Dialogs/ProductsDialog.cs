@@ -71,10 +71,8 @@ namespace FoodDeliveryBot.Dialogs
 					await dc.Context.SendActivity($"Добавлен {product.Name} (${product.Price:0.00})." +
 						Environment.NewLine + Environment.NewLine +
 						$"Текущий заказ на сумму ${total:0.00}.");
-				},
-                async (dc, args, next) =>
-                {
-                    await dc.Prompt("choicePrompt", "Выбор продукта", new ChoicePromptOptions
+
+                    await dc.Prompt("choicePrompt", string.Empty, new ChoicePromptOptions
                     {
                         Choices = ChoiceFactory.ToChoices(Actions)
                     });
