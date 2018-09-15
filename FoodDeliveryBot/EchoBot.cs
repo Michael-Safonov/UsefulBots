@@ -93,7 +93,6 @@ namespace FoodDeliveryBot
 					else if (choice.Value == "Завершить заказ")
 					{
 						await dc.Begin(EndOrderSessionDialog.Id);
-						//await next();
 					}
 					else
 					{
