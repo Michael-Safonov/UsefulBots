@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace FoodDeliveryBot.Alice.AliceDialogs
 {
@@ -8,6 +7,8 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 	/// </summary>
 	public class ChooseActionOnOrderDialog : AbstractAliceDialog
 	{
+		public string OrderCode { get; set; }
+
 		/// <summary>
 		/// Выбранный магазин.
 		/// </summary>
@@ -15,21 +16,7 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
-			// TODO: из базы
-			var deliveriesAndProducts = new Dictionary<int, IdNameModel[]>
-			{
-				{ 1, new [] {
-					new IdNameModel { Id = 1, Name = "Кинг шавуха стандарт" },
-					new IdNameModel { Id = 2, Name = "Кинг шавуха большая" }
-					}},
-
-				{ 2, new [] {
-					new IdNameModel { Id = 3, Name = "Дёнер шавуха стандарт" },
-					new IdNameModel { Id = 4, Name = "Дёнер шавуха большая" }
-					}}
-			};
-
-			var deliveryProducts = deliveriesAndProducts[DeliveryId];
+			var deliveryProducts = AliceData.DeliveriesAndProducts[DeliveryId];
 
 			AbstractAliceDialog nextDialog = null;
 			switch (pressedButton.Payload.Type)
@@ -51,15 +38,22 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 						}).ToArray();
 						nextDialog = new ChooseProductDialog
 						{
-							Buttons = buttons
+							Buttons = buttons,
+							OrderCode = OrderCode,
 						};
 
 						break;
 					}
-				case ButtonType.CancelMyOrder:
+				case ButtonType.SeeMyOrder:
 					{
-						// TODO: отмена заказа, вернуться в начало
-						nextDialog = new InitialDialog();
+						// todo: implement
+						nextDialog = new SeeMyOrderDialog();
+						break;
+					}
+				case ButtonType.EndMyOrder:
+					{
+						// todo: implement
+						nextDialog = new EndMyOrderDialog();
 						break;
 					}
 				default:
@@ -90,10 +84,19 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 			{
 				Payload = new AliceButtonPayloadModel
 				{
-					Type = ButtonType.CancelMyOrder
+					Type = ButtonType.SeeMyOrder
 				},
 				DialogType = DialogType(),
-				Title = "Отменить мой заказ"
+				Title = "Посмотреть мой заказ"
+			},
+			new AliceButton
+			{
+				Payload = new AliceButtonPayloadModel
+				{
+					Type = ButtonType.EndMyOrder
+				},
+				DialogType = DialogType(),
+				Title = "Завершить мой заказ"
 			}
 		};
 	}

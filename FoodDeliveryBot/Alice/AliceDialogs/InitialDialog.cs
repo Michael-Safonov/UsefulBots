@@ -37,7 +37,7 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 					{
 						var code = AliceHelpers.CreateOrderCode();
 						AlicePersistence.UserOrders[code] = new Domain.AliceOrder();
-						nextDialog = GetNewOrderDialog();
+						nextDialog = GetNewOrderDialog(code);
 						break;
 					}
 				case ButtonType.ExistingOrder:
@@ -56,16 +56,9 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 			return nextDialog;
 		}
 
-		private AbstractAliceDialog GetNewOrderDialog()
+		private AbstractAliceDialog GetNewOrderDialog(string orderCode)
 		{
-			// todo: use DeliveryService and map to IdNameModel
-			var deliveries = new[]
-			{
-				new IdNameModel { Id = 1, Name = "Шаурма Кинг" },
-				new IdNameModel { Id = 2, Name = "Дёнер" },
-			};
-
-			var buttons = deliveries.Select(d => new AliceButton
+			var buttons = AliceData.Deliveries.Select(d => new AliceButton
 			{
 				Title = d.Name,
 				Payload = new AliceButtonPayloadModel
@@ -77,7 +70,8 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 
 			return new ChooseDeliveryDialog
 			{
-				Buttons = buttons
+				Buttons = buttons,
+				OrderCode = orderCode,
 			};
 		}
 

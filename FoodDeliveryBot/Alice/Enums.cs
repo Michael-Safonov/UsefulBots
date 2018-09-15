@@ -19,7 +19,7 @@ namespace FoodDeliveryBot.Alice
 		ClickOnDelivery, // клик по доставке (магазину)
 		ChooseProduct, // Выберите продукты
 		ClickOnProduct, // клик по продукту
-		CancelMyOrder, // удалить мой заказ
+		SeeMyOrder, // посмотреть мой заказ
 		EndMyOrder, // завершить мой заказ
 	}
 }

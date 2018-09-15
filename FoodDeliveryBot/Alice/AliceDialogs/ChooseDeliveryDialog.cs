@@ -2,6 +2,8 @@
 {
 	public class ChooseDeliveryDialog : AbstractAliceDialog
 	{
+		public string OrderCode { get; set; }
+
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
 			var deliveryId = pressedButton?.Payload?.Data?.Id;
@@ -13,7 +15,8 @@
 
 			var dialog = new ChooseActionOnOrderDialog
 			{
-				DeliveryId = deliveryId.Value
+				DeliveryId = deliveryId.Value,
+				OrderCode = OrderCode
 			};
 
 			return dialog;
