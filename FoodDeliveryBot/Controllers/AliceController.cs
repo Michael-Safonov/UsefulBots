@@ -14,6 +14,8 @@ namespace FoodDeliveryBot.Controllers
 		private static readonly ConcurrentDictionary<string, AbstractAliceDialog> CurrentDialogs 
 			= new ConcurrentDictionary<string, AbstractAliceDialog>();
 
+		
+
 		/// <summary>
 		/// Этот метод получает сообщения от Алисы.
 		/// </summary>
@@ -34,7 +36,10 @@ namespace FoodDeliveryBot.Controllers
 					Payload = b.Payload
 				}).ToArray();
 
-				return req.Reply($"Привет, пользователь! Вот, что у нас в dictionary: [{string.Join(',', CurrentDialogs.Select(c => c.Key))}]. Что хочешь?",
+				var dictionaryJson = JsonConvert.SerializeObject(CurrentDialogs.Select(cd => new { cd.Key, cd.Value }));
+				Log.Debug($"CurrentDialogs: {dictionaryJson}");
+
+				return req.Reply($"Привет, пользователь! Что хочешь?",
 					buttons: aliceButtons);
 			}
 
@@ -47,7 +52,7 @@ namespace FoodDeliveryBot.Controllers
 					Payload = b.Payload
 				}).ToArray();
 
-				return req.Reply(dialog.Title(), buttons: aliceButtons);
+				return req.Reply(dialog.Title, buttons: aliceButtons);
 			}
 
 			if (req.Session.New) // новый пользователь
@@ -71,6 +76,21 @@ namespace FoodDeliveryBot.Controllers
 
 				// TODO: send AliceButtonPayloadModel to .Action instead of AliceButton
 				var nextDialog = currentDialog.Action(clickedButton);
+				if (nextDialog.NoAnswer)
+				{
+					// просто берём текст этого диалога
+					// и выполняем его Action
+					var dialogText = nextDialog.Title;
+					//Log.Debug($"dialogText: {dialogText}");
+					nextDialog = nextDialog.Action();
+					//var nextDialogTitle = nextDialog.Title;
+					nextDialog.Title = $"{dialogText}\n{nextDialog.Title}";
+					//Log.Debug($"nextDialog.Title: {nextDialog.Title}");
+					//var initDialog = new InitialDialog();
+					//initDialog.Title = "abc";//$"{dialogText} {initDialog.Title}";
+					//Log.Debug($"initDialog.Title: {initDialog.Title}");
+					//nextDialog = initDialog;
+				}
 
 				// TODO: make method dialog => alice response
 				var aliceResponse = ConvertToAliceResponse(nextDialog);

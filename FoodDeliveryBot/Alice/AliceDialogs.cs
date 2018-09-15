@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 namespace FoodDeliveryBot.Alice
 {
@@ -80,7 +81,13 @@ namespace FoodDeliveryBot.Alice
 			}
 		};
 
-		public override string Title() => "Выберите вариант";
+		private string title;
+
+		public override string Title
+		{
+			get { return title ?? "Выберите вариант";  }
+			set { title = value; }
+		}
 	}
 
 	public class ChooseDeliveryDialog : AbstractAliceDialog
@@ -104,7 +111,7 @@ namespace FoodDeliveryBot.Alice
 
 		public override DialogType DialogType() => Alice.DialogType.ChooseDelivery;
 
-		public override string Title() => "Выберите метод доставки";
+		public override string Title => "Выберите метод доставки";
 	}
 
 	/// <summary>
@@ -135,12 +142,6 @@ namespace FoodDeliveryBot.Alice
 
 			var deliveryProducts = deliveriesAndProducts[DeliveryId];
 
-			if (pressedButton.Payload.Type != ButtonType.ClickOnProduct)
-			{
-				// ошибка, вернуть в начало
-				return new InitialDialog();
-			}
-
 			AbstractAliceDialog nextDialog = null;
 			switch (pressedButton.Payload.Type)
 			{
@@ -151,7 +152,7 @@ namespace FoodDeliveryBot.Alice
 							Title = p.Name,
 							Payload = new AliceButtonPayloadModel
 							{
-								Type = ButtonType.ClickOnDelivery,
+								Type = ButtonType.ClickOnProduct,
 								Data = new IdNameModel
 								{
 									Id = p.Id,
@@ -183,7 +184,7 @@ namespace FoodDeliveryBot.Alice
 
 		public override DialogType DialogType() => Alice.DialogType.ChooseActionOnOrder;
 
-		public override string Title() => $"Вы выбрали доставку Id={DeliveryId}. Что дальше?";
+		public override string Title => $"Вы выбрали доставку Id={DeliveryId}. Что дальше?";
 
 		public override AliceButton[] Buttons => new[]
 		{
@@ -215,10 +216,16 @@ namespace FoodDeliveryBot.Alice
 	{
 		public override DialogType DialogType() => Alice.DialogType.ChooseProducts;
 
-		public override string Title() => "Выберите продукт:";
+		public override string Title => "Выберите продукт:";
 
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
+			if (pressedButton.Payload.Type != ButtonType.ClickOnProduct)
+			{
+				// ошибка, вернуть в начало
+				return new InitialDialog();
+			}
+
 			var productId = pressedButton.Payload.Data.Id;
 
 			return new PrintDialog
@@ -233,14 +240,18 @@ namespace FoodDeliveryBot.Alice
 	/// </summary>
 	public class PrintDialog : AbstractAliceDialog
 	{
+		public override bool NoAnswer => true;
+
 		public string Text { get; set; }
 
-		public override DialogType DialogType() => Alice.DialogType.ChooseProducts;
+		public override DialogType DialogType() => Alice.DialogType.Print;
 
-		public override string Title() => Text;
+		public override string Title => Text;
 
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
+			Log.Debug("PrintDialog");
+			Log.Debug($"Title:{Title}");
 			// todo: м.б. настроить возвращение в любое место
 			return new InitialDialog();
 		}
