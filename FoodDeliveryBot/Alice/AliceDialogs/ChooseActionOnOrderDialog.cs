@@ -47,7 +47,11 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 				case ButtonType.SeeMyOrder:
 					{
 						// todo: implement
-						nextDialog = new SeeMyOrderDialog();
+						nextDialog = new SeeMyOrderDialog
+						{
+							DeliveryId = DeliveryId,
+							OrderCode = OrderCode,
+						};
 						break;
 					}
 				case ButtonType.EndMyOrder:

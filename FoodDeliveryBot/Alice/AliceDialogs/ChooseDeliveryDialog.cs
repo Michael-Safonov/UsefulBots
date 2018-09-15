@@ -24,11 +24,13 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
 			var deliveryId = pressedButton?.Payload?.Data?.Id;
-			if (deliveryId == null)
+			if (!deliveryId.HasValue)
 			{
 				// TODO: неправильный ввод, показать диалог доставки ещё раз
 				return new InitialDialog();
 			}
+
+			AlicePersistence.UserOrders[OrderCode].DeliveryId = deliveryId.Value;
 
 			var dialog = new ChooseActionOnOrderDialog
 			{

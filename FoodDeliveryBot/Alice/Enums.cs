@@ -10,6 +10,7 @@ namespace FoodDeliveryBot.Alice
 		ChooseProducts, // "Шава1", "Шава2", "Отмена", "Завершить"
 		Print, // фейковый диалог для просто выдачи текстового сообщения и перехода к след. диалогу
 		GetOrderKey, // получить ключ существующего
+		SeeMyOrder,
 	}
 
 	public enum ButtonType

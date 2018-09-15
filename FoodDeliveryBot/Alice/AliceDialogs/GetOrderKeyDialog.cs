@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace FoodDeliveryBot.Alice.AliceDialogs
+﻿namespace FoodDeliveryBot.Alice.AliceDialogs
 {
 	public class GetOrderKeyDialog : AbstractAliceDialog
 	{
@@ -27,13 +25,11 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 				};
 			}
 
-			// todo: найти DeliveryId (магазин) заказа и записать в диалог
-			var deliveryId = AliceData.DeliveriesAndProducts.First(dp => dp.Value.Contains(p => p.Id == ))
 			return new ChooseActionOnOrderDialog
 			{
-			OrderCode = command,
-			DeliveryId
-			}
+				OrderCode = command,
+				DeliveryId = order.DeliveryId
+			};
 		}
 
 		public override DialogType DialogType() => Alice.DialogType.GetOrderKey;
