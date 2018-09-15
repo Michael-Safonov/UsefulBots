@@ -1,7 +1,24 @@
-﻿namespace FoodDeliveryBot.Alice.AliceDialogs
+﻿using System.Linq;
+
+namespace FoodDeliveryBot.Alice.AliceDialogs
 {
 	public class ChooseDeliveryDialog : AbstractAliceDialog
 	{
+		public ChooseDeliveryDialog()
+		{
+			var buttons = AliceData.Deliveries.Select(d => new AliceButton
+			{
+				Title = d.Name,
+				Payload = new AliceButtonPayloadModel
+				{
+					Type = ButtonType.ClickOnDelivery,
+					Data = d
+				}
+			}).ToArray();
+
+			Buttons = buttons;
+		}
+
 		public string OrderCode { get; set; }
 
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)

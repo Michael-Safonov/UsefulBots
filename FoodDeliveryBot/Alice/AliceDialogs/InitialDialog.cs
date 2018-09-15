@@ -58,19 +58,8 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 
 		private AbstractAliceDialog GetNewOrderDialog(string orderCode)
 		{
-			var buttons = AliceData.Deliveries.Select(d => new AliceButton
-			{
-				Title = d.Name,
-				Payload = new AliceButtonPayloadModel
-				{
-					Type = ButtonType.ClickOnDelivery,
-					Data = d
-				}
-			}).ToArray();
-
 			return new ChooseDeliveryDialog
 			{
-				Buttons = buttons,
 				OrderCode = orderCode,
 			};
 		}
