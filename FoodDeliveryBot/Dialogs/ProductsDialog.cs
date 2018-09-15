@@ -9,6 +9,7 @@ using FoodDeliveryBot.Models;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Schema;
 using System;
+using Microsoft.Bot.Builder.Adapters;
 
 namespace FoodDeliveryBot.Dialogs
 {
@@ -17,27 +18,21 @@ namespace FoodDeliveryBot.Dialogs
 		public const string Id = "productsDialog";
 		public const string OrderedProductsList = "orderedProductsList";
 		public static ProductsDialog Instance { get; } = new ProductsDialog();
-		private readonly List<Product> Products = new List<Product>() {
-			//todo: Получать продукты из бд. По Id заказа определять продавашку и тут подгрузить его продукты.
-			new Product { Name = "Classic", Desciption = "Classic shavuha", Price = 120m},
-			new Product { Name = "Non classic", Desciption = "Non classic shavuha", Price = 150m},
-			//todo: вынести в константы
-			new Product { Name = "Завершить"},
-			new Product { Name = "Отменить"}
-		};
-		private List<string> MainMenu
-		{
-			get
-			{
-				return Products.Select(x => x.Name).ToList();
-			}
-		}
+
+        private readonly List<string> Actions = new List<string>
+        {
+            "Завершить",
+            "Отменить",
+        };
+
 		private ProductsDialog() : base(Id)
 		{
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				async (dc, args, next) =>
 				{
+				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range;
+
 					if (args is null || !args.ContainsKey(OrderedProductsList))
 					{
 						dc.ActiveDialog.State[OrderedProductsList] = new OrderedProducts();
@@ -49,15 +44,19 @@ namespace FoodDeliveryBot.Dialogs
 					//todo: переделать на Hero Card
 					await dc.Prompt("choicePrompt", "Выбор продукта", new ChoicePromptOptions
 					{
-						Choices = ChoiceFactory.ToChoices(MainMenu)
+						Choices = ChoiceFactory.ToChoices(GetMainMenu(productList))
 					});
 				},
 				async (dc, args, next) =>
 				{
-					var choice = (FoundChoice)args["Value"];
-					var option = Products[choice.Index];
-					 var cart = (OrderedProducts)dc.ActiveDialog.State[OrderedProductsList];
-					 if (option.Name == "Завершить")
+				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range;
+
+                    var choice = (FoundChoice)args["Value"];
+					var option = GetMainMenu(productList)[choice.Index];
+
+                    var cart = (OrderedProducts)dc.ActiveDialog.State[OrderedProductsList];
+
+                    if (option == "Завершить")
 					{
 						if (cart.Count > 0)
 						{
@@ -73,25 +72,27 @@ namespace FoodDeliveryBot.Dialogs
 						else
 						{
 							await dc.Context.SendActivity(
-								"Вы не выбрали ни одного продукта. Выбирайте блеать!");
+								"Вы не выбрали ни одного продукта.");
 							await dc.Replace(Id);
 						}
 					}
-					else if (option.Name == "Отменить")
+					else if (option == "Отменить")
 					{
 						await dc.Context.SendActivity("Вы отменили заказ");
 						 dc.ActiveDialog.State.Clear();
 						await dc.End(new Dictionary<string, object>());
 					}
 					else
-					{
-						cart.Add(option);
+                    {
+                        var product = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range[choice.Index];
+
+						cart.Add(product);
 						 var total = cart.Sum(x => x.Price);
 						//берем инфу по оредру
 						//
-						await dc.Context.SendActivity($"Добавлена {option.Name} (${option.Price:0.00})." +
+						await dc.Context.SendActivity($"Добавлена {product.Name} (${product.Price:0.00})." +
 							Environment.NewLine + Environment.NewLine +
-							$"Еекущий заказ на сумму ${total:0.00}.");
+							$"Текущий заказ на сумму ${total:0.00}.");
 						 await dc.Replace(Id, dc.ActiveDialog.State);
 					}
 				},
@@ -102,6 +103,16 @@ namespace FoodDeliveryBot.Dialogs
 			});
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
-		private class OrderedProducts : List<Product> { }
+
+	    private List<string> GetMainMenu(List<Product> products)
+	    {
+	        var menuItems = products.Select(x => x.Name).ToList();
+
+	        menuItems.AddRange(this.Actions);
+
+	        return menuItems;
+        }
+        
+        private class OrderedProducts : List<Product> { }
 	}
 }
