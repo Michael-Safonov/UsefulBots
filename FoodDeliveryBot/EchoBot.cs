@@ -36,6 +36,7 @@ namespace FoodDeliveryBot
 				var dc = _dialogs.CreateContext(context, conversationInfo);
 
 				// Continue any current dialog.
+
 				await dc.Continue();
 
 				// Every turn sends a response, so if no response was sent,
@@ -60,7 +61,7 @@ namespace FoodDeliveryBot
 		private static DialogSet ComposeMainDialog()
 		{
 			var dialogs = new DialogSet();
-			var userOrderActions = new List<string> { "Выбор продуктов", "Статистика", "Отменить заказ" };
+			var userOrderActions = new List<string> { "Выбор продуктов", "Статистика", "Отменить заказ", "Завершить заказ" };
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
 			{				
@@ -75,19 +76,24 @@ namespace FoodDeliveryBot
 				async (dc, args, next) =>
 				{
 					var choice = (FoundChoice)args["Value"];
-					if (choice.Value == userOrderActions[0])
+					if (choice.Value == "Выбор продуктов")
 					{
 						await dc.Begin(ProductsDialog.Id);
 					}
-					else if (choice.Value == userOrderActions[1])
+					else if (choice.Value == "Статистика")
 					{
 						//реализовать вывод статистики
 						await next();
 					}
-					else if (choice.Value == userOrderActions[2])
+					else if (choice.Value == "Отменить заказ")
 					{
 						var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 						sessionInfo.OrderSession = null;
+					}
+					else if (choice.Value == "Завершить заказ")
+					{
+						await dc.Begin(EndOrderSessionDialog.Id);
+						//await next();
 					}
 					else
 					{
@@ -98,13 +104,14 @@ namespace FoodDeliveryBot
 				async (dc, args, next) =>
 				{
 					// Show the main menu again.
-					await dc.Replace(MainMenuDialogId);
+					// await dc.Replace(MainMenuDialogId);
 				}
 			});
 
 			dialogs.Add(OrderDialog.Id, OrderDialog.Instance);
 			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
+			dialogs.Add(EndOrderSessionDialog.Id, EndOrderSessionDialog.Instance);
 			dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 			return dialogs;
 		}

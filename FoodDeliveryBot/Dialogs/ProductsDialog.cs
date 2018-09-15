@@ -23,6 +23,7 @@ namespace FoodDeliveryBot.Dialogs
         {
             "Завершить",
             "Отменить",
+            "Продолжить"
         };
 
 		private ProductsDialog() : base(Id)
@@ -41,61 +42,87 @@ namespace FoodDeliveryBot.Dialogs
 					{
 						dc.ActiveDialog.State = new Dictionary<string, object>(args);
 					}
-					//todo: переделать на Hero Card
-					await dc.Prompt("choicePrompt", "Выбор продукта", new ChoicePromptOptions
-					{
-						Choices = ChoiceFactory.ToChoices(GetMainMenu(productList))
-					});
-				},
+
+                    var products = productList.Select(x => new HeroCard {
+                        Title = x.Name,
+                        Images = new List<CardImage>() { new CardImage("https://tashirpizza.ru/images/products/49-319.jpg") },
+                        Text = x.Name,
+                        Buttons = new List<CardAction> { new CardAction { Title = $"{x.Name} ({x.Price})", Value = x.Name, Type = ActionTypes.PostBack } }
+                    }.ToAttachment()).ToList();
+
+                    await dc.Context.SendActivity(MessageFactory.Carousel(products));
+                },
 				async (dc, args, next) =>
 				{
-				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range;
+                    var session = UserState<SessionInfo>.Get(dc.Context).OrderSession;
+                    var productList = session.DeliveryService.Range;
 
-                    var choice = (FoundChoice)args["Value"];
-					var option = GetMainMenu(productList)[choice.Index];
+                    var option = ((Activity)args["Activity"]).Text;
+					//var option = GetMainMenu(productList)[choice];
 
                     var cart = (OrderedProducts)dc.ActiveDialog.State[OrderedProductsList];
 
-                    if (option == "Завершить")
-					{
-						if (cart.Count > 0)
-						{
-							//var userState = UserState<UserInfo>.Get(dc.Context);
-							//userState.OrderedProducts = cart;
-							////todo: Просто для примера, потом убрать все в статс
-							//var total = cart.Sum(x => x.Price);
-							//var message = cart.Select(x => $"{x.Name} - {x.Price}");
-							//await dc.Context.SendActivity($"Order ID {userState.Order.OrderId}{Environment.NewLine}" +
-							//	$"{string.Join(Environment.NewLine, message.ToArray())}{Environment.NewLine}{total}");
-							// await dc.End();
-						}
-						else
-						{
-							await dc.Context.SendActivity(
-								"Вы не выбрали ни одного продукта.");
-							await dc.Replace(Id);
-						}
-					}
-					else if (option == "Отменить")
-					{
-						await dc.Context.SendActivity("Вы отменили заказ");
-						 dc.ActiveDialog.State.Clear();
-						await dc.End(new Dictionary<string, object>());
-					}
-					else
-                    {
-                        var product = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range[choice.Index];
+                    var product = session.DeliveryService.Range.First(x => x.Name == option);
 
-						cart.Add(product);
-						 var total = cart.Sum(x => x.Price);
-						//берем инфу по оредру
-						//
-						await dc.Context.SendActivity($"Добавлена {product.Name} (${product.Price:0.00})." +
-							Environment.NewLine + Environment.NewLine +
-							$"Текущий заказ на сумму ${total:0.00}.");
-						 await dc.Replace(Id, dc.ActiveDialog.State);
-					}
-				},
+					cart.Add(product);
+					 var total = cart.Sum(x => x.Price);
+					//берем инфу по оредру
+					//
+					await dc.Context.SendActivity($"Добавлен {product.Name} (${product.Price:0.00})." +
+						Environment.NewLine + Environment.NewLine +
+						$"Текущий заказ на сумму ${total:0.00}.");
+
+                    await dc.Prompt("choicePrompt", string.Empty, new ChoicePromptOptions
+                    {
+                        Choices = ChoiceFactory.ToChoices(Actions)
+                    });
+                },
+                async (dc, args, next) =>
+                {
+                    var choice = (FoundChoice)args["Value"];
+                    var option = Actions[choice.Index];
+                    var cart = (OrderedProducts)dc.ActiveDialog.State[OrderedProductsList];
+                    var session = UserState<SessionInfo>.Get(dc.Context).OrderSession;
+
+                    if (option == "Завершить")
+                    {
+                        if (cart.Count > 0)
+                        {
+                            var total = cart.Sum(x => x.Price);
+                            var receipt = new ReceiptCard
+                            {
+                                Title = "Текущий заказ пользователя",
+                                Facts = new List<Fact>{ new Fact (key: "Order Id", value: session.OrderSessionId.ToString())},
+                                Items = cart.Select(x => new ReceiptItem
+                                    {
+                                        Title = x.Name,
+                                        Price = x.Price.ToString("0.00")
+                                    }).ToList(),
+                                Total = total.ToString("0.00"),
+                            }.ToAttachment();
+							//todo: Просто для примера, потом убрать все в статс
+
+                            await dc.Context.SendActivity(MessageFactory.Attachment(receipt));
+                            await dc.End();
+                        }
+                        else
+                        {
+                            await dc.Context.SendActivity(
+                                "Вы не выбрали ни одного продукта.");
+                            await dc.Replace(Id);
+                        }
+                    }
+                    else if (option == "Отменить")
+                    {
+                        await dc.Context.SendActivity("Вы отменили заказ");
+                         dc.ActiveDialog.State.Clear();
+                        await dc.End(new Dictionary<string, object>());
+                    }
+                    else if (option == "Продолжить")
+                    {
+                        await dc.Replace(Id, dc.ActiveDialog.State);
+                    }
+                },
 				async (dc, args, next) =>
 				{
 					await dc.Replace(Id);
@@ -104,15 +131,6 @@ namespace FoodDeliveryBot.Dialogs
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
-	    private List<string> GetMainMenu(List<Product> products)
-	    {
-	        var menuItems = products.Select(x => x.Name).ToList();
-
-	        menuItems.AddRange(this.Actions);
-
-	        return menuItems;
-        }
-        
         private class OrderedProducts : List<Product> { }
 	}
 }

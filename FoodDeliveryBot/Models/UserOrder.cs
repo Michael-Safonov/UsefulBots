@@ -7,9 +7,13 @@ namespace FoodDeliveryBot.Models
 {
 	public class UserOrder
 	{
-		public Guid UserId { get; set; }
+	    public Guid UserOrderId { get; set; }
 
-        public Guid SessionId { get; set; }
+        public string UserId { get; set; }
+
+		public string UserName { get; set; }
+
+		public Guid SessionId { get; set; }
 
 		public List<Product> Products { get; set; }
 	}
