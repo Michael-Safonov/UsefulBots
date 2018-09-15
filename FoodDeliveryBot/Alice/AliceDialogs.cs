@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace FoodDeliveryBot.Alice
 {
@@ -46,7 +47,7 @@ namespace FoodDeliveryBot.Alice
 				Title = d.Name,
 				Payload = new AliceButtonPayloadModel
 				{
-					Type = ButtonType.ClickOnProduct,
+					Type = ButtonType.ClickOnDelivery,
 					Data = d
 				}
 			}).ToArray();
@@ -95,7 +96,7 @@ namespace FoodDeliveryBot.Alice
 
 			var dialog = new ChooseActionOnOrderDialog
 			{
-				DeliveryId = deliveryId ?? -1
+				DeliveryId = deliveryId.Value
 			};
 
 			return dialog;
@@ -118,7 +119,66 @@ namespace FoodDeliveryBot.Alice
 
 		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
 		{
-			switch (pressedButton)
+			// TODO: из базы
+			var deliveriesAndProducts = new Dictionary<int, IdNameModel[]>
+			{
+				{ 1, new [] {
+					new IdNameModel { Id = 1, Name = "Кинг шавуха стандарт" },
+					new IdNameModel { Id = 2, Name = "Кинг шавуха большая" }
+					}},
+
+				{ 2, new [] {
+					new IdNameModel { Id = 3, Name = "Дёнер шавуха стандарт" },
+					new IdNameModel { Id = 4, Name = "Дёнер шавуха большая" }
+					}}
+			};
+
+			var deliveryProducts = deliveriesAndProducts[DeliveryId];
+
+			if (pressedButton.Payload.Type != ButtonType.ClickOnProduct)
+			{
+				// ошибка, вернуть в начало
+				return new InitialDialog();
+			}
+
+			AbstractAliceDialog nextDialog = null;
+			switch (pressedButton.Payload.Type)
+			{
+				case ButtonType.ChooseProduct:
+					{
+						var buttons = deliveryProducts.Select(p => new AliceButton
+						{
+							Title = p.Name,
+							Payload = new AliceButtonPayloadModel
+							{
+								Type = ButtonType.ClickOnDelivery,
+								Data = new IdNameModel
+								{
+									Id = p.Id,
+									Name = p.Name
+								}
+							}
+						}).ToArray();
+						nextDialog = new ChooseProductDialog
+						{
+							Buttons = buttons
+						};
+
+						break;
+					}
+				case ButtonType.CancelMyOrder:
+					{
+						// TODO: отмена заказа, вернуться в начало
+						nextDialog = new InitialDialog();
+						break;
+					}
+				default:
+					{
+						return new InitialDialog();
+					}
+			}
+
+			return nextDialog;
 		}
 
 		public override DialogType DialogType() => Alice.DialogType.ChooseActionOnOrder;
@@ -126,7 +186,7 @@ namespace FoodDeliveryBot.Alice
 		public override string Title() => $"Вы выбрали доставку Id={DeliveryId}. Что дальше?";
 
 		public override AliceButton[] Buttons => new[]
-{
+		{
 			new AliceButton
 			{
 				Payload = new AliceButtonPayloadModel
@@ -148,4 +208,41 @@ namespace FoodDeliveryBot.Alice
 		};
 	}
 
+	/// <summary>
+	/// Диалог выбора продукта.
+	/// </summary>
+	public class ChooseProductDialog : AbstractAliceDialog
+	{
+		public override DialogType DialogType() => Alice.DialogType.ChooseProducts;
+
+		public override string Title() => "Выберите продукт:";
+
+		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
+		{
+			var productId = pressedButton.Payload.Data.Id;
+
+			return new PrintDialog
+			{
+				Text = $"Вы выбрали продукт с Id: {productId}"
+			};
+		}
+	}
+
+	/// <summary>
+	/// Диалог для печати чего-нибудь.
+	/// </summary>
+	public class PrintDialog : AbstractAliceDialog
+	{
+		public string Text { get; set; }
+
+		public override DialogType DialogType() => Alice.DialogType.ChooseProducts;
+
+		public override string Title() => Text;
+
+		public override AbstractAliceDialog Action(AliceButton pressedButton = null, string command = null)
+		{
+			// todo: м.б. настроить возвращение в любое место
+			return new InitialDialog();
+		}
+	}
 }
