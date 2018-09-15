@@ -80,10 +80,10 @@ namespace FoodDeliveryBot.Dialogs
 
                             await dc.Context.SendActivity("Заказ завершен. Спасибо!");
 
-						    sessioninfo.UserOrder = null;
-                            sessioninfo.OrderSession = null;
+							sessioninfo.UserOrder = null;
+							sessioninfo.OrderSession = null;
 
-						    await dc.End();
+							await dc.End();
 						}
                         else
 						{

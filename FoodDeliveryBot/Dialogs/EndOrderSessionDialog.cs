@@ -2,6 +2,7 @@
 using FoodDeliveryBot.Repositories;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +13,22 @@ namespace FoodDeliveryBot.Dialogs
 	public class EndOrderSessionDialog : DialogContainer
 	{
 		private readonly OrderSessionRepository orderSessionRepository;
+		private readonly UserOrderRepository userOrderRepository;
 
 		public const string Id = "endOrderSession";
 
-		public static EndOrderSessionDialog Instance { get; } = new EndOrderSessionDialog(new OrderSessionRepository("OrderSessions"));
+		public static EndOrderSessionDialog Instance
+		{
+			get
+			{
+				return new EndOrderSessionDialog(new OrderSessionRepository("OrderSessions"), new UserOrderRepository("UserOrders"));
+			}
+		}
 
-		private EndOrderSessionDialog(OrderSessionRepository orderSessionRepository) : base(Id)
+		private EndOrderSessionDialog(OrderSessionRepository orderSessionRepository, UserOrderRepository userOrderRepository) : base(Id)
 		{
 			this.orderSessionRepository = orderSessionRepository;
+			this.userOrderRepository = userOrderRepository;
 			InitEndOrderSessionDialog();
 		}
 
@@ -40,13 +49,15 @@ namespace FoodDeliveryBot.Dialogs
 			var userId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId");
 
 			if (orderSession.OwnerUserId == userId)
-			{
-				//todo:собрать статистику сессии и красиво показать
-				await dc.Prompt("textPrompt", $"Итого: {orderSession.DeliveryService.Name}");
-
+			{	
 				// Сохраняем завершенный заказ
 				orderSession.IsCompleted = true;
 				await this.orderSessionRepository.Upsert(orderSession);
+
+				// Формируем чек
+				var attachment = await GetReceiptCardSession(orderSession);
+				await dc.Context.SendActivity(MessageFactory.Attachment(attachment));
+
 				UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
 				await dc.End();
 			}
@@ -54,6 +65,26 @@ namespace FoodDeliveryBot.Dialogs
 			{
 				await dc.Prompt("textPrompt", "Вы не являетесь администратором заказа");
 			}
+		}
+
+		private async Task<Attachment> GetReceiptCardSession(OrderSession orderSession)
+		{
+			//todo:собрать статистику сессии и красиво показать
+			var userOrders = (await this.userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
+			var summaryOrder = userOrders.SelectMany(uo => uo.Products).Sum(p => p.Price);
+			var receipt = new ReceiptCard
+			{
+				Title = "Общий заказ",
+				Facts = new List<Fact> { new Fact(key: "Order Id", value: orderSession.OrderSessionId.ToString()) },
+				Items = userOrders.Select(uo => new ReceiptItem
+				{
+					Title = uo.UserId,
+					Price = uo.Products.Sum(p => p.Price).ToString("0.00")
+				}).ToList(),
+				Total = summaryOrder.ToString("0.00"),
+			}.ToAttachment();
+
+			return receipt;
 		}
 	}
 }
