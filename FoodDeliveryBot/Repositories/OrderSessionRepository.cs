@@ -30,7 +30,7 @@ namespace FoodDeliveryBot.Repositories
             return result;
         }
 
-        public async Task<OrderSession> GetByPinCode(int pinCode)
+        public async Task<OrderSession> GetByPinCode(string pinCode)
         {
             return await Task.FromResult(base.collection.FindOne(s => s.Pincode == pinCode));
         }

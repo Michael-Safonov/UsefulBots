@@ -8,5 +8,7 @@ namespace FoodDeliveryBot.Models
 	public class SessionInfo
 	{
 		public OrderSession OrderSession { get; set; }
-	}
+
+        public UserOrder UserOrder { get; set; }
+    }
 }
