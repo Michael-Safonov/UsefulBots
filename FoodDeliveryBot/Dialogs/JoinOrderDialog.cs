@@ -41,13 +41,12 @@ namespace FoodDeliveryBot.Dialogs
 		private async Task CheckOrderPincodeStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var pincode = args["Value"] as string;
-			OrderSession orderSession = null;
-			if (int.TryParse(pincode, out var pincodeOut))
-				orderSession = await this.orderSessionRepository.GetByPinCode(pincodeOut);
-			else
-				throw new Exception("Ключ не валиден");
 
-			if (orderSession != null)
+            OrderSession orderSession = null;
+
+            orderSession = await this.orderSessionRepository.GetByPinCode(pincode);
+
+            if (orderSession != null)
 			{
 				await dc.Begin(ProductsDialog.Id);
 			}

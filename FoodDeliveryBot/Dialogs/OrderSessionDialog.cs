@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FoodDeliveryBot.Utils;
 
 namespace FoodDeliveryBot.Dialogs
 {
@@ -74,7 +75,7 @@ namespace FoodDeliveryBot.Dialogs
 				{
 					OrderSessionId = Guid.NewGuid(),
 					// todo: добавить метод генерации пин-кода 
-					Pincode = 1111,
+					Pincode = PinCodeGenerator.GetPinCode(),
 					// Получаем UserId
 					OwnerUserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId")
 				};
@@ -87,7 +88,9 @@ namespace FoodDeliveryBot.Dialogs
 
 				sessionInfo.OrderSession = newOrder;
 
-				await dc.Begin(DeliveryServiceDialog.Id);
+			    await dc.Context.SendActivity($"Пин код: {sessionInfo.OrderSession.Pincode}");
+
+                await dc.Begin(DeliveryServiceDialog.Id);
 			}
 			else
 			{
