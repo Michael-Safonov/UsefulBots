@@ -44,7 +44,11 @@ namespace FoodDeliveryBot.Dialogs
 			var pincode = args["Value"] as string;
             var orderSession = await this.orderSessionRepository.GetByPinCode(pincode);
 
-            if (orderSession != null)
+		    if (orderSession != null && orderSession.IsCompleted)
+		    {
+		        await dc.Prompt("textPrompt", "Извините. Заказ уже завершен :(");
+            }
+		    else if (orderSession != null && !orderSession.IsCompleted)
 			{
 				UserState<SessionInfo>.Get(dc.Context).OrderSession = orderSession;
 				await dc.Begin(ProductsDialog.Id);
