@@ -68,17 +68,16 @@ namespace FoodDeliveryBot.Dialogs
 		}
 
 		private async Task<Attachment> GetReceiptCardSession(OrderSession orderSession)
-		{
-			//todo:собрать статистику сессии и красиво показать
+		{	
 			var userOrders = (await this.userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
 			var summaryOrder = userOrders.SelectMany(uo => uo.Products).Sum(p => p.Price);
 			var receipt = new ReceiptCard
 			{
 				Title = "Общий заказ",
-				Facts = new List<Fact> { new Fact(key: "Order Id", value: orderSession.OrderSessionId.ToString()) },
+				Facts = new List<Fact> { new Fact(key: "Ключ заказа", value: orderSession.Pincode) },
 				Items = userOrders.Select(uo => new ReceiptItem
 				{
-					Title = uo.UserId,
+					Title = uo.UserName,
 					Price = uo.Products.Sum(p => p.Price).ToString("0.00")
 				}).ToList(),
 				Total = summaryOrder.ToString("0.00"),
