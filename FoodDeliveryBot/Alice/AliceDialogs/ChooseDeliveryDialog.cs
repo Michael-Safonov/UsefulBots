@@ -41,6 +41,6 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 
 		public override DialogType DialogType() => Alice.DialogType.ChooseDelivery;
 
-		public override string Title => "Выберите метод доставки";
+		public override string Title => $"Код Вашего заказа: {OrderCode}\nВыберите метод доставки";
 	}
 }
