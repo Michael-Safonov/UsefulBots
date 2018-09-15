@@ -10,6 +10,8 @@ namespace FoodDeliveryBot.Models
 		public int Id { get; set; }
 		public string Name { get; set; }
 
-		//todo: add work time and additional information for delivery service
-	}
+	    public List<Product> Range { get; set; }
+
+        //todo: add work time and additional information for delivery service
+    }
 }

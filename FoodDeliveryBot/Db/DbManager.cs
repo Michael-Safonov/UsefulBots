@@ -12,5 +12,10 @@ namespace FoodDeliveryBot.Db
 		{
 			Instance = new LiteDatabase(ConnectionString);
 		}
+
+	    public static bool DropCollection(string collectionName)
+	    {
+	        return Instance.DropCollection(collectionName);
+	    }
 	}
 }

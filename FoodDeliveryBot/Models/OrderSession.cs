@@ -11,7 +11,7 @@ namespace FoodDeliveryBot.Models
 		public int Pincode { get; set; }
 		public bool IsCompleted  { get; set; }
 		public DeliveryService DeliveryService { get; set; }
-		public Guid OwnerUser { get; set; }
+		public string OwnerUserId { get; set; }
 
 		public List<UserOrder> UserOrders { get; set; }
 

@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using FoodDeliveryBot.Repositories;
 
 namespace FoodDeliveryBot
 {
@@ -64,11 +65,16 @@ namespace FoodDeliveryBot
 				// IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
 				options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-				options.Middleware.Add(new UserState<UserInfo>(dataStore));
+				options.Middleware.Add(new UserState<SessionInfo>(dataStore));
 			});
 
 			services.AddMvc();
-		}
+            
+		    services.AddTransient<DeliveryServiceRepository>(provider => new DeliveryServiceRepository("DeliveryServices"));
+		    services.AddTransient<OrderSessionRepository>(provider => new OrderSessionRepository("OrderSessions"));
+		    services.AddTransient<UserOrderRepository>(provider => new UserOrderRepository("UserOrders"));
+
+        }
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
