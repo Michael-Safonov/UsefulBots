@@ -12,7 +12,5 @@ namespace FoodDeliveryBot.Models
 		public bool IsCompleted  { get; set; }
 		public DeliveryService DeliveryService { get; set; }
 		public string OwnerUserId { get; set; }
-
-		public List<UserOrder> UserOrders { get; set; }
 	}
 }
