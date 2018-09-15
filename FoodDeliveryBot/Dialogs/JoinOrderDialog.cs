@@ -1,5 +1,6 @@
 ﻿using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
+using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using System;
 using System.Collections.Generic;
@@ -43,12 +44,13 @@ namespace FoodDeliveryBot.Dialogs
 			var pincode = args["Value"] as string;
 			OrderSession orderSession = null;
 			if (int.TryParse(pincode, out var pincodeOut))
-				orderSession = await this.orderSessionRepository.GetByPinCode(pincodeOut);
+				orderSession = await this.orderSessionRepository.GetByPinCode(pincodeOut);				
 			else
 				throw new Exception("Ключ не валиден");
 
 			if (orderSession != null)
 			{
+				UserState<SessionInfo>.Get(dc.Context).OrderSession = orderSession;
 				await dc.Begin(ProductsDialog.Id);
 			}
 			else
