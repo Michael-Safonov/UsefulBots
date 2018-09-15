@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /FoodDeliveryBot/BotDb.db
 /FoodDeliveryBot/Properties/PublishProfiles
+/FoodDeliveryBot/Logs

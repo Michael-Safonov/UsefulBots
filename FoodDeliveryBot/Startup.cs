@@ -1,4 +1,8 @@
-﻿using FoodDeliveryBot.Models;
+﻿using System;
+using System.IO;
+using FoodDeliveryBot.Middleware;
+using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Bot.Builder.BotFramework;
@@ -7,8 +11,8 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using FoodDeliveryBot.Repositories;
+using Microsoft.Extensions.FileProviders;
+using Serilog;
 
 namespace FoodDeliveryBot
 {
@@ -25,6 +29,10 @@ namespace FoodDeliveryBot
 				.AddEnvironmentVariables();
 
 			Configuration = builder.Build();
+
+			Log.Logger = new LoggerConfiguration()
+				.ReadFrom.Configuration(Configuration)
+				.CreateLogger();
 		}
 
 		public IConfiguration Configuration { get; }
@@ -68,13 +76,14 @@ namespace FoodDeliveryBot
 				options.Middleware.Add(new UserState<SessionInfo>(dataStore));
 			});
 
+			services.AddDirectoryBrowser();
 			services.AddMvc();
-            
-		    services.AddTransient<DeliveryServiceRepository>(provider => new DeliveryServiceRepository("DeliveryServices"));
-		    services.AddTransient<OrderSessionRepository>(provider => new OrderSessionRepository("OrderSessions"));
-		    services.AddTransient<UserOrderRepository>(provider => new UserOrderRepository("UserOrders"));
 
-        }
+			services.AddTransient<DeliveryServiceRepository>(provider => new DeliveryServiceRepository("DeliveryServices"));
+			services.AddTransient<OrderSessionRepository>(provider => new OrderSessionRepository("OrderSessions"));
+			services.AddTransient<UserOrderRepository>(provider => new UserOrderRepository("UserOrders"));
+
+		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -86,6 +95,16 @@ namespace FoodDeliveryBot
 
 			app.UseDefaultFiles()
 				.UseStaticFiles();
+
+			app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+			app.UseFileServer(new FileServerOptions
+			{
+				FileProvider = new PhysicalFileProvider(
+					Path.Combine(Directory.GetCurrentDirectory(), "Logs")),
+				RequestPath = "/Logs",
+				EnableDirectoryBrowsing = true
+			});
 
 			app.UseMvc(routes =>
 			{
