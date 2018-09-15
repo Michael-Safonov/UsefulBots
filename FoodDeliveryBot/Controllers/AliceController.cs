@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Linq;
+﻿using System.Linq;
 using FoodDeliveryBot.Alice;
+using FoodDeliveryBot.Alice.AliceDialogs;
 using FoodDeliveryBot.Extensions;
 using FoodDeliveryBot.Models.AliceModels;
 using Microsoft.AspNetCore.Mvc;
@@ -11,24 +11,19 @@ namespace FoodDeliveryBot.Controllers
 {
 	public class AliceController : Controller
 	{
-		private static readonly ConcurrentDictionary<string, AbstractAliceDialog> CurrentDialogs 
-			= new ConcurrentDictionary<string, AbstractAliceDialog>();
-
-		
-
 		/// <summary>
 		/// Этот метод получает сообщения от Алисы.
 		/// </summary>
 		/// <param name="req"></param>
 		/// <returns></returns>
 		[HttpPost]
-		public AliceResponse WebHook([FromBody] AliceRequest req)
+		public AliceResponse WebHook([FromBody]AliceRequest req)
 		{
 			var userId = req.Session.UserId;
 			AliceResponse GoToStart() {
 				var dialog = new InitialDialog();
 				// приветствие
-				CurrentDialogs.GetOrAdd(userId, dialog);
+				AlicePersistence.CurrentDialogs.GetOrAdd(userId, dialog);
 
 				var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
 				{
@@ -36,31 +31,19 @@ namespace FoodDeliveryBot.Controllers
 					Payload = b.Payload
 				}).ToArray();
 
-				var dictionaryJson = JsonConvert.SerializeObject(CurrentDialogs.Select(cd => new { cd.Key, cd.Value }));
-				Log.Debug($"CurrentDialogs: {dictionaryJson}");
+				//var dictionaryJson = JsonConvert.SerializeObject(AlicePersistence.CurrentDialogs.Select(cd => new { cd.Key, cd.Value }));
+				//Log.Debug($"CurrentDialogs: {dictionaryJson}");
 
 				return req.Reply($"Привет, пользователь! Что хочешь?",
 					buttons: aliceButtons);
 			}
-
-			AliceResponse ConvertToAliceResponse(AbstractAliceDialog dialog)
-			{
-				Log.Debug($"Dialog: {JsonConvert.SerializeObject(dialog)}");
-				var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
-				{
-					Title = b.Title,
-					Payload = b.Payload
-				}).ToArray();
-
-				return req.Reply(dialog.Title, buttons: aliceButtons);
-			}
-
+			
 			if (req.Session.New) // новый пользователь
 			{
 				return GoToStart();
 			}
 
-			if (!CurrentDialogs.TryGetValue(userId, out var currentDialog))
+			if (!AlicePersistence.CurrentDialogs.TryGetValue(userId, out var currentDialog))
 			{
 				return GoToStart();
 			}
@@ -81,30 +64,54 @@ namespace FoodDeliveryBot.Controllers
 					// просто берём текст этого диалога
 					// и выполняем его Action
 					var dialogText = nextDialog.Title;
-					//Log.Debug($"dialogText: {dialogText}");
 					nextDialog = nextDialog.Action();
-					//var nextDialogTitle = nextDialog.Title;
 					nextDialog.Title = $"{dialogText}\n{nextDialog.Title}";
-					//Log.Debug($"nextDialog.Title: {nextDialog.Title}");
-					//var initDialog = new InitialDialog();
-					//initDialog.Title = "abc";//$"{dialogText} {initDialog.Title}";
-					//Log.Debug($"initDialog.Title: {initDialog.Title}");
-					//nextDialog = initDialog;
 				}
 
 				// TODO: make method dialog => alice response
-				var aliceResponse = ConvertToAliceResponse(nextDialog);
+				var aliceResponse = ConvertToAliceResponse(nextDialog, req);
 
-				CurrentDialogs[userId] = nextDialog;
+				AlicePersistence.CurrentDialogs[userId] = nextDialog;
 
 				return aliceResponse;
 			}
 			else if (req.Request.Type == AliceRequestType.SimpleUtterance)
 			{
-				return req.Reply("А вот это науке пока неизвестно!");
+				// ну пока это запрос на код заказа
+				// todo: сделать универсальный механизм
+				if (!(currentDialog is GetOrderKeyDialog))
+				{
+					var printDialog = new PrintDialog
+					{
+						Text = "Данная команда не найдена"
+					};
+
+					return ConvertToAliceResponse(printDialog, req);
+				}
+
+				var nextDialog = currentDialog.Action(command: req.Request.Command);
+
+				// TODO: make method dialog => alice response
+				var aliceResponse = ConvertToAliceResponse(nextDialog, req);
+
+				AlicePersistence.CurrentDialogs[userId] = nextDialog;
+
+				return aliceResponse;
 			}
 			
 			return req.Reply("Привет! Я FoodBoy. Хочешь заказать покушать?");
+		}
+
+		private AliceResponse ConvertToAliceResponse(AbstractAliceDialog dialog, AliceRequest req)
+		{
+			//Log.Debug($"Dialog: {JsonConvert.SerializeObject(dialog)}");
+			var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
+			{
+				Title = b.Title,
+				Payload = b.Payload
+			}).ToArray();
+
+			return req.Reply(dialog.Title, buttons: aliceButtons);
 		}
 	}
 }

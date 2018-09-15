@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Один вопрос юзеру.
 	/// </summary>
-	public abstract class AbstractAliceDialog
+	public abstract class AbstractAliceDialog 
 	{
 		public abstract DialogType DialogType();
 
