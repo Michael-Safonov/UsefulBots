@@ -51,6 +51,8 @@ namespace FoodDeliveryBot
 				// an "Ooops" message is sent. 
 				options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
 				{
+					Log.Error(exception, "Exception");
+
 					await context.TraceActivity("EchoBot Exception", exception);
 					await context.SendActivity("Sorry, it looks like something went wrong!");
 				}));
