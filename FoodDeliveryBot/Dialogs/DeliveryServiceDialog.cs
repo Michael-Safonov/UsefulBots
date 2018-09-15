@@ -15,14 +15,25 @@ namespace FoodDeliveryBot.Dialogs
 	public class DeliveryServiceDialog : DialogContainer
 	{
 		private readonly DeliveryServiceRepository deliveryServiceRepository;
+		private readonly OrderSessionRepository orderSessionRepository;
 
 		public const string Id = "choiceDeliveryService";
 
-		public static DeliveryServiceDialog Instance { get; } = new DeliveryServiceDialog(new DeliveryServiceRepository("DeliveryServices"));
+		public static DeliveryServiceDialog Instance
+		{
+			get
+			{
+				return new DeliveryServiceDialog(
+						new DeliveryServiceRepository("DeliveryServices"),
+						new OrderSessionRepository("OrderSessions")
+					);
+			}
+		}		
 
-		private DeliveryServiceDialog(DeliveryServiceRepository deliveryServiceRepository) : base(Id)
+		private DeliveryServiceDialog(DeliveryServiceRepository deliveryServiceRepository, OrderSessionRepository orderSessionRepository): base(Id)
 		{
 			this.deliveryServiceRepository = deliveryServiceRepository;
+			this.orderSessionRepository = orderSessionRepository;
 			InitDeliveryServiceDialog();
 		}
 
@@ -60,6 +71,9 @@ namespace FoodDeliveryBot.Dialogs
 			
 			var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 			sessionInfo.OrderSession.DeliveryService = deliveryService;
+
+			//сохраняем обновленный OrderSession в БД
+			await this.orderSessionRepository.Update(sessionInfo.OrderSession);
 		}
 	}
 }
