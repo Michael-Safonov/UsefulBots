@@ -80,7 +80,7 @@ namespace FoodDeliveryBot.Dialogs
 				Items = userOrders.Select(uo => new ReceiptItem
 				{
 					Title = uo.UserName,
-					Price = uo.Products.Sum(p => p.Price).ToString("0.00")
+					Price = $"{uo.Products.Sum(p => p.Price):0.00}₽",
 				}).ToList(),
 				Total = summaryOrder.ToString("0.00"),
 			}.ToAttachment();
