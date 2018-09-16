@@ -1,4 +1,6 @@
-﻿using FoodDeliveryBot.Repositories;
+﻿using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Repositories;
+using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Recognizers.Text;
 using System;
@@ -54,7 +56,11 @@ namespace FoodDeliveryBot.Dialogs
 		{
 			var address = args["Value"] as string;
 			//todo:отправить смс по телефону который взять из DeliveryService
-			await dc.Context.SendActivity($"Заказ отправлен.\nЗаказ будет доставлен по адресу:\n{address}");			
+			await dc.Context.SendActivity($"Заказ отправлен.\nЗаказ будет доставлен по адресу:\n{address}");
+
+			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
+			dc.ActiveDialog.State.Clear();
+			await dc.End(null);
 		}
 	}
 }
