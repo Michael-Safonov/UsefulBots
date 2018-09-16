@@ -1,0 +1,38 @@
+﻿@using FoodDeliveryBot.Models;
+@model IEnumerable<DeliveryService>
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<h2>Доставки</h2>
+<div>
+    <a href="@Url.Action("Create", "Deliveries")" class="btn btn-primary" role="button">
+        Добавить доставку
+    </a>
+</div>
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var delivery in Model)
+            {
+                <tr>
+                    <td>@delivery.Id</td>
+                    <td>@delivery.Name</td>
+                    <td>
+                        <a href="@Url.Action("GetById", "Deliveries", new { id = delivery.Id}, null)" class="btn btn-primary" role="button">
+                            Посмотреть продукты
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
