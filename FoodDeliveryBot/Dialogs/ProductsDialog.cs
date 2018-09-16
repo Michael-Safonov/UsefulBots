@@ -79,12 +79,18 @@ namespace FoodDeliveryBot.Dialogs
 
 						    await this.userOrderRepository.Insert(userOrder);
 
-                            await dc.Context.SendActivity("Заказ завершен. Спасибо!");
-
-							////sessioninfo.UserOrder = null;
-							////sessioninfo.OrderSession = null;
-
-							await dc.End(new Dictionary<string, object>());
+                            await dc.Context.SendActivity("Заказ завершен. Спасибо!");							
+							
+							if (dc.Context.Activity.From.Id == sessioninfo.OrderSession.OwnerUserId)
+								await dc.End(new Dictionary<string, object>());
+							else
+							{
+								//await dc.Context.SendActivity("Вы отменили заказ");
+								sessioninfo.UserOrder = null;
+								sessioninfo.OrderSession = null;
+								dc.ActiveDialog.State.Clear();
+								await dc.End(null);
+							}
 						}
                         else
 						{
