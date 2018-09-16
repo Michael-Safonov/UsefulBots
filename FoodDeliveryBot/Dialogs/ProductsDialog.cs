@@ -70,7 +70,7 @@ namespace FoodDeliveryBot.Dialogs
                             var userOrder = new UserOrder
                             {
                                 UserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId"),
-								UserName = dc.Context.Activity.From.Name ?? throw new Exception("Не нашел UserName"),
+								UserName = dc.Context.Activity.From.Name ?? throw new Exception("Не нашел UserName. Возможно вы используете старую версию Skype"),
 								SessionId = sessioninfo.OrderSession.OrderSessionId,
                                 Products = cart,
                             };
