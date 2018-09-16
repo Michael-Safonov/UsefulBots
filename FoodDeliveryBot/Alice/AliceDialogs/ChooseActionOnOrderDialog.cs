@@ -51,7 +51,6 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 					}
 				case ButtonType.EndMyOrder:
 					{
-						// todo: implement
 						nextDialog = new EndMyOrderDialog
 						{
 							OrderCode = OrderCode
@@ -73,7 +72,16 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 		private string title;
 		public override string Title
 		{
-			get { return title ?? $"Вы выбрали доставку Id={DeliveryId}. Что дальше?"; }
+			get
+			{
+				if (!string.IsNullOrWhiteSpace(title))
+				{
+					return title;
+				}
+
+				var delivery = AliceData.Deliveries.First(d => d.Id == DeliveryId);
+				return $"Вы выбрали доставку из {delivery.Name}. Что дальше?";
+			}
 			set { title = value; }
 		}
 
