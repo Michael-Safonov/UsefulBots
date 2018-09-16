@@ -4,8 +4,6 @@ using FoodDeliveryBot.Alice.AliceDialogs;
 using FoodDeliveryBot.Extensions;
 using FoodDeliveryBot.Models.AliceModels;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Serilog;
 
 namespace FoodDeliveryBot.Controllers
 {
@@ -20,24 +18,18 @@ namespace FoodDeliveryBot.Controllers
 		public AliceResponse WebHook([FromBody]AliceRequest req)
 		{
 			var userId = req.Session.UserId;
-			AliceResponse GoToStart() {
+			AliceResponse GoToStart()
+			{
 				var dialog = new InitialDialog();
 				// приветствие
-				AlicePersistence.CurrentDialogs.GetOrAdd(userId, dialog);
+				AlicePersistence.CurrentDialogs[userId] = dialog;
 
-				var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
-				{
-					Title = b.Title,
-					Payload = b.Payload
-				}).ToArray();
+				var response = ConvertToAliceResponse(dialog, req);
+				response.Response.Text = response.Response.Tts = "Привет, пользователь! Что хочешь?";
 
-				//var dictionaryJson = JsonConvert.SerializeObject(AlicePersistence.CurrentDialogs.Select(cd => new { cd.Key, cd.Value }));
-				//Log.Debug($"CurrentDialogs: {dictionaryJson}");
-
-				return req.Reply($"Привет, пользователь! Что хочешь?",
-					buttons: aliceButtons);
+				return response;
 			}
-			
+
 			if (req.Session.New) // новый пользователь
 			{
 				return GoToStart();
@@ -98,13 +90,12 @@ namespace FoodDeliveryBot.Controllers
 
 				return aliceResponse;
 			}
-			
+
 			return req.Reply("Привет! Я FoodBoy. Хочешь заказать покушать?");
 		}
 
 		private AliceResponse ConvertToAliceResponse(AbstractAliceDialog dialog, AliceRequest req)
 		{
-			//Log.Debug($"Dialog: {JsonConvert.SerializeObject(dialog)}");
 			var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
 			{
 				Title = b.Title,

@@ -25,7 +25,11 @@
 				};
 			}
 
-			return new ChooseActionOnOrderDialog();
+			return new ChooseActionOnOrderDialog
+			{
+				OrderCode = command,
+				DeliveryId = order.DeliveryId
+			};
 		}
 
 		public override DialogType DialogType() => Alice.DialogType.GetOrderKey;

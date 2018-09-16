@@ -7,5 +7,7 @@ namespace FoodDeliveryBot.Alice.Domain
 		public List<IdNameModel> Products { get; set; } = new List<IdNameModel>();
 
 		public bool IsCompleted { get; set; }
+
+		public int DeliveryId { get; set; }
 	}
 }
