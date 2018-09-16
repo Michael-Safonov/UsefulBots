@@ -1,8 +1,8 @@
 ﻿namespace FoodDeliveryBot.DataStubs
 {
-	public class DataStub
+	public static class DataStub
 	{
-		public DeliveryStub[] Deliveries = new[]
+		public static DeliveryStub[] Deliveries = new[]
 		{
 			new DeliveryStub
 			{
