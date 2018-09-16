@@ -56,9 +56,20 @@ namespace FoodDeliveryBot.Dialogs
 		private async Task SetAddressStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var address = args["Value"] as string;
-			//todo:отправить смс по телефону который взять из DeliveryService
-			await dc.Context.SendActivity($"Заказ отправлен.\nЗаказ будет доставлен по адресу:\n{address}");
 
+            var orderSession = UserState<SessionInfo>.Get(dc.Context).OrderSession;
+            var products = orderSession.DeliveryService.Range;
+
+            var messageList = products.GroupBy(x => x.Name)
+                                        .Select(x => $"{x.Key} - {x.Count()} шт. ({x.Sum(p => p.Price)})").ToList();
+
+            messageList.Add($"Доставка по адресу: {address}");
+            var message = string.Join(Environment.NewLine, messageList);
+
+            await dc.Context.SendActivity(message);
+
+            var smsSender = new SMS.SmsSender();
+            smsSender.SendSms(orderSession.DeliveryService.Phone, message);
 			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
 			dc.ActiveDialog.State.Clear();
             await dc.Replace(OrderSessionDialog.Id);
