@@ -78,7 +78,8 @@ namespace FoodDeliveryBot.Dialogs
             smsSender.SendSms(orderSession.DeliveryService.Phone, message);
 			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
 			dc.ActiveDialog.State.Clear();
-            await dc.Replace(OrderSessionDialog.Id);
+			//await dc.Replace(OrderSessionDialog.Id);
+			await dc.End();
 		}
 	}
 }

@@ -85,10 +85,10 @@ namespace FoodDeliveryBot.Dialogs
 								await dc.End(new Dictionary<string, object>());
 							else
 							{
-								//await dc.Context.SendActivity("Вы отменили заказ");
 								sessioninfo.UserOrder = null;
 								sessioninfo.OrderSession = null;
 								dc.ActiveDialog.State.Clear();
+								//await dc.Replace(OrderSessionDialog.Id);
 								await dc.End(null);
 							}
 						}
@@ -123,6 +123,7 @@ namespace FoodDeliveryBot.Dialogs
 				//	await dc.Replace(Id);
 				//},
 			});
+			//this.Dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
