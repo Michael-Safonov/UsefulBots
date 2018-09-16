@@ -103,15 +103,7 @@ namespace FoodDeliveryBot
 				},
 				async (dc, args, next) =>
 				{
-					 //Show the main menu again.
-					if (args == null)
-					{
-					}
-					else
-					{
-						await dc.Replace(MainMenuDialogId);
-					}
-					 
+					await dc.Replace(MainMenuDialogId);
 				}
 			});
 

@@ -43,6 +43,7 @@ namespace FoodDeliveryBot.Dialogs
 				SetAddressStep
 			});
 
+            this.Dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -60,7 +61,7 @@ namespace FoodDeliveryBot.Dialogs
 
 			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
 			dc.ActiveDialog.State.Clear();
-			await dc.End(null);
+            await dc.Replace(OrderSessionDialog.Id);
 		}
 	}
 }
