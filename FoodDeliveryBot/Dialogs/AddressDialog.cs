@@ -36,6 +36,7 @@ namespace FoodDeliveryBot.Dialogs
 		{
 			this.deliveryServiceRepository = deliveryServiceRepository;
 			this.orderSessionRepository = orderSessionRepository;
+			this.userOrderRepository = userOrderRepository;
 			InitDeliveryServiceDialog();
 		}
 
