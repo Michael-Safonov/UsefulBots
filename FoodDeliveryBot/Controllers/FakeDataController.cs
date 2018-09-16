@@ -73,6 +73,15 @@ namespace FoodDeliveryBot.Controllers
 			return "Complete!";
 		}
 
+		[HttpGet("dropordersessions")]
+		public async Task<string> DropOrders()
+		{
+			// дропаем базу
+			DbManager.DropCollection("OrderSessions");
+
+			return "Complete!";
+		}
+
 		private static IEnumerable<DeliveryService> GetDeliveryServices(int count, int startId = 1, int productsFrom = 3, int productsTo = 10)
         {
             var currentId = startId;
