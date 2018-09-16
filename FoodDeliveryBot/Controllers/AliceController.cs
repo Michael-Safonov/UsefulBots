@@ -25,17 +25,21 @@ namespace FoodDeliveryBot.Controllers
 				// приветствие
 				AlicePersistence.CurrentDialogs.GetOrAdd(userId, dialog);
 
-				var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
-				{
-					Title = b.Title,
-					Payload = b.Payload
-				}).ToArray();
+				var response = ConvertToAliceResponse(dialog, req);
+				response.Response.Text = response.Response.Tts = "Привет, пользователь! Что хочешь?";
+
+				return response;
+				//var aliceButtons = dialog.Buttons.Select(b => new AliceButtonModel
+				//{
+				//	Title = b.Title,
+				//	Payload = b.Payload
+				//}).ToArray();
 
 				//var dictionaryJson = JsonConvert.SerializeObject(AlicePersistence.CurrentDialogs.Select(cd => new { cd.Key, cd.Value }));
 				//Log.Debug($"CurrentDialogs: {dictionaryJson}");
 
-				return req.Reply($"Привет, пользователь! Что хочешь?",
-					buttons: aliceButtons);
+				//return req.Reply($,
+				//	buttons: aliceButtons);
 			}
 			
 			if (req.Session.New) // новый пользователь

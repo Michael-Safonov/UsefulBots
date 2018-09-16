@@ -46,11 +46,7 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 					}
 				case ButtonType.SeeMyOrder:
 					{
-						nextDialog = new SeeMyOrderDialog
-						{
-							DeliveryId = DeliveryId,
-							OrderCode = OrderCode,
-						};
+						nextDialog = new SeeMyOrderDialog(OrderCode, DeliveryId);
 						break;
 					}
 				case ButtonType.EndMyOrder:
@@ -74,7 +70,12 @@ namespace FoodDeliveryBot.Alice.AliceDialogs
 
 		public override DialogType DialogType() => Alice.DialogType.ChooseActionOnOrder;
 
-		public override string Title => $"Вы выбрали доставку Id={DeliveryId}. Что дальше?";
+		private string title;
+		public override string Title
+		{
+			get { return title ?? $"Вы выбрали доставку Id={DeliveryId}. Что дальше?"; }
+			set { title = value; }
+		}
 
 		public override AliceButton[] Buttons => new[]
 		{
