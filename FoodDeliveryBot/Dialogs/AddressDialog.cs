@@ -14,6 +14,7 @@ namespace FoodDeliveryBot.Dialogs
 	{
 		private readonly DeliveryServiceRepository deliveryServiceRepository;
 		private readonly OrderSessionRepository orderSessionRepository;
+		private readonly UserOrderRepository userOrderRepository;
 
 		public const string Id = "getAddress";
 
@@ -23,12 +24,15 @@ namespace FoodDeliveryBot.Dialogs
 			{
 				return new AddressDialog(
 						new DeliveryServiceRepository("DeliveryServices"),
-						new OrderSessionRepository("OrderSessions")
+						new OrderSessionRepository("OrderSessions"),
+						new UserOrderRepository("UserOrders")
 					);
 			}
 		}
 
-		private AddressDialog(DeliveryServiceRepository deliveryServiceRepository, OrderSessionRepository orderSessionRepository) : base(Id)
+		private AddressDialog(DeliveryServiceRepository deliveryServiceRepository,
+			OrderSessionRepository orderSessionRepository,
+			UserOrderRepository userOrderRepository) : base(Id)
 		{
 			this.deliveryServiceRepository = deliveryServiceRepository;
 			this.orderSessionRepository = orderSessionRepository;
@@ -58,10 +62,11 @@ namespace FoodDeliveryBot.Dialogs
 			var address = args["Value"] as string;
 
             var orderSession = UserState<SessionInfo>.Get(dc.Context).OrderSession;
-            var products = orderSession.DeliveryService.Range;
+			var userOrders = (await this.userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
+			//var products = orderSession.DeliveryService.Range;
 
-            var messageList = products.GroupBy(x => x.Name)
-                                        .Select(x => $"{x.Key} - {x.Count()} шт. ({x.Sum(p => p.Price)})").ToList();
+            var messageList = userOrders.SelectMany(uo => uo.Products).GroupBy(x => x.Name)
+                                        .Select(x => $"{x.Key} - {x.Count()} шт. ({x.Sum(p => p.Price)})\n").ToList();
 
             messageList.Add($"Доставка по адресу: {address}");
             var message = string.Join(Environment.NewLine, messageList);

@@ -49,7 +49,7 @@ namespace FoodDeliveryBot.Dialogs
 					//todo: переделать на Hero Card
 					await dc.Prompt("choicePrompt", "Выбор продукта", new ChoicePromptOptions
 					{
-						Choices = ChoiceFactory.ToChoices(GetMainMenu(productList))
+						Choices = ChoiceFactory.ToChoices(GetMainMenuWithPrice(productList))
 					});
 				},
 				async (dc, args, next) =>
@@ -70,7 +70,7 @@ namespace FoodDeliveryBot.Dialogs
                             var userOrder = new UserOrder
                             {
                                 UserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId"),
-								UserName = dc.Context.Activity.From.Name ?? throw new Exception("Не нашел UserName"),
+								UserName = dc.Context.Activity.From.Name ?? throw new Exception("Не нашел UserName. Возможно вы используете старую версию Skype"),
 								SessionId = sessioninfo.OrderSession.OrderSessionId,
                                 Products = cart,
                             };
@@ -112,9 +112,9 @@ namespace FoodDeliveryBot.Dialogs
 						 var total = cart.Sum(x => x.Price);
 						//берем инфу по оредру
 						//
-						await dc.Context.SendActivity($"Добавлена {product.Name} (${product.Price:0.00})." +
+						await dc.Context.SendActivity($"Добавлена {product.Name} ({product.Price:0.00}₽)." +
 							Environment.NewLine + Environment.NewLine +
-							$"Текущий заказ на сумму ${total:0.00}.");
+							$"Текущий заказ на сумму {total:0.00}₽.");
 						await dc.Replace(Id, dc.ActiveDialog.State);
 					}
 				},
@@ -134,7 +134,16 @@ namespace FoodDeliveryBot.Dialogs
 
 	        return menuItems;
         }
-        
+
+	    private List<string> GetMainMenuWithPrice(List<Product> products)
+	    {
+	        var menuItems = products.Select(x => $"{x.Name} ({x.Price}₽)").ToList();
+
+	        menuItems.AddRange(this._actions);
+
+	        return menuItems;
+	    }
+
         private class OrderedProducts : List<Product> { }
 	}
 }
