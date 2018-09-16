@@ -67,6 +67,7 @@ namespace FoodDeliveryBot
 			{				
 				async (dc, args, next) =>
 				{
+					// await dc.Prompt("textPrompt", $"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
 					await dc.Prompt("choicePrompt", "Выберите действие:", new ChoicePromptOptions
 					{
 						Choices = ChoiceFactory.ToChoices(userOrderActions),
@@ -102,8 +103,7 @@ namespace FoodDeliveryBot
 				},
 				async (dc, args, next) =>
 				{
-					// Show the main menu again.
-					// await dc.Replace(MainMenuDialogId);
+					await dc.Replace(MainMenuDialogId);
 				}
 			});
 

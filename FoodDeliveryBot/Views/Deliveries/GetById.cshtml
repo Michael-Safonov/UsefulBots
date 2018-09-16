@@ -1,0 +1,33 @@
+﻿@model FoodDeliveryBot.Models.DeliveryService
+@{
+    ViewData["Title"] = "GetById";
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<h2>@Model.Name</h2>
+<div>
+    <a href="@Url.Action("Create", "Products", new { deliveryId = Model.Id }, null)" class="btn btn-primary" role="button">
+        Добавить продукт
+    </a>
+</div>
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th>Цена</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Range)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>@product.Desciption</td>
+                    <td>@product.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

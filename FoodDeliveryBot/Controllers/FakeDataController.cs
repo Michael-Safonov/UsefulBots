@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
+using FoodDeliveryBot.DataStubs;
 using FoodDeliveryBot.Db;
 using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
@@ -47,7 +48,32 @@ namespace FoodDeliveryBot.Controllers
             return "Complete!";
         }
 
-        private static IEnumerable<DeliveryService> GetDeliveryServices(int count, int startId = 1, int productsFrom = 3, int productsTo = 10)
+		[HttpGet("stubs")]
+		public async Task<string> DropAndFillWithStubs(int count)
+		{
+			// дропаем базу
+			DbManager.DropCollection("DeliveryServices");
+
+			foreach (var service in DataStub.Deliveries)
+			{
+				var deliveryService = new DeliveryService
+				{
+					Name = service.Name,
+					Range = service.Products?.Select(p => new Product
+					{
+						Name = p.Name,
+						Desciption = p.Description,
+						Price = p.Price
+					}).ToList()
+				};
+
+				await deliveryServiceRepository.Insert(deliveryService);
+			}
+
+			return "Complete!";
+		}
+
+		private static IEnumerable<DeliveryService> GetDeliveryServices(int count, int startId = 1, int productsFrom = 3, int productsTo = 10)
         {
             var currentId = startId;
 

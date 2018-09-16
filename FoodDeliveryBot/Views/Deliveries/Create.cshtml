@@ -1,0 +1,18 @@
+﻿@model FoodDeliveryBot.Models.ViewModels.DeliveryCreateModel
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<h2>Добавление доставки</h2>
+
+@using (Html.BeginForm("Create", "Deliveries"))
+{
+    <div class="form-group">
+        <label>
+            Название
+            @Html.EditorFor(m => m.Name, new { htmlAttributes = new { required = "true", @class = "form-control" } })
+        </label>
+    </div>
+    <button type="submit" class="btn btn-default">Создать</button>
+}

@@ -51,9 +51,10 @@ namespace FoodDeliveryBot.Dialogs
 		    else if (orderSession != null && !orderSession.IsCompleted)
 			{
 				UserState<SessionInfo>.Get(dc.Context).OrderSession = orderSession;
-
-			    await dc.Prompt("textPrompt", $"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
-                await dc.Begin(ProductsDialog.Id);
+				//await dc.Context.SendActivity($"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
+				
+				// await dc.Prompt("textPrompt", $"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
+				// await dc.Begin(ProductsDialog.Id);
 			}
 			else
 			{

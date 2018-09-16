@@ -70,7 +70,8 @@ namespace FoodDeliveryBot.Dialogs
                             var userOrder = new UserOrder
                             {
                                 UserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId"),
-                                SessionId = sessioninfo.OrderSession.OrderSessionId,
+								UserName = dc.Context.Activity.From.Name ?? throw new Exception("Не нашел UserName"),
+								SessionId = sessioninfo.OrderSession.OrderSessionId,
                                 Products = cart,
                             };
 
@@ -78,12 +79,18 @@ namespace FoodDeliveryBot.Dialogs
 
 						    await this.userOrderRepository.Insert(userOrder);
 
-                            await dc.Context.SendActivity("Заказ завершен. Спасибо!");
-
-							sessioninfo.UserOrder = null;
-							sessioninfo.OrderSession = null;
-
-							await dc.End();
+                            await dc.Context.SendActivity("Заказ завершен. Спасибо!");							
+							
+							if (dc.Context.Activity.From.Id == sessioninfo.OrderSession.OwnerUserId)
+								await dc.End(new Dictionary<string, object>());
+							else
+							{
+								//await dc.Context.SendActivity("Вы отменили заказ");
+								sessioninfo.UserOrder = null;
+								sessioninfo.OrderSession = null;
+								dc.ActiveDialog.State.Clear();
+								await dc.End(null);
+							}
 						}
                         else
 						{
@@ -94,7 +101,7 @@ namespace FoodDeliveryBot.Dialogs
 					else if (option == "Отменить")
 					{
 						await dc.Context.SendActivity("Вы отменили заказ");
-						 dc.ActiveDialog.State.Clear();
+						dc.ActiveDialog.State.Clear();
 						await dc.End(new Dictionary<string, object>());
 					}
 					else
@@ -108,13 +115,13 @@ namespace FoodDeliveryBot.Dialogs
 						await dc.Context.SendActivity($"Добавлена {product.Name} (${product.Price:0.00})." +
 							Environment.NewLine + Environment.NewLine +
 							$"Текущий заказ на сумму ${total:0.00}.");
-						 await dc.Replace(Id, dc.ActiveDialog.State);
+						await dc.Replace(Id, dc.ActiveDialog.State);
 					}
 				},
-				async (dc, args, next) =>
-				{
-					await dc.Replace(Id);
-				},
+				//async (dc, args, next) =>
+				//{
+				//	await dc.Replace(Id);
+				//},
 			});
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
