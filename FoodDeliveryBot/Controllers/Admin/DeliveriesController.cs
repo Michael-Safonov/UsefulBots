@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Models.ViewModels;
 using FoodDeliveryBot.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +30,30 @@ namespace FoodDeliveryBot.Controllers.Admin
 			var delivery = await _deliveryServiceRepository.GetById(id);
 
 			return View(delivery);
+		}
+
+		[HttpGet]
+		public IActionResult Create()
+		{
+			return View();
+		}
+
+		[HttpPost]
+		public async Task<IActionResult> Create(DeliveryCreateModel model)
+		{
+			if (ModelState.IsValid)
+			{
+				var newDelivery = new DeliveryService
+				{
+					Name = model.Name,
+				};
+
+				await _deliveryServiceRepository.Upsert(newDelivery);
+
+				return RedirectToAction("Index", "Deliveries");
+			}
+
+			return View();
 		}
 	}
 }

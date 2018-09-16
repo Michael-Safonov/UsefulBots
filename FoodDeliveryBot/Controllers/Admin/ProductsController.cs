@@ -1,5 +1,6 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Models.ViewModels;
 using FoodDeliveryBot.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,13 +15,38 @@ namespace FoodDeliveryBot.Controllers.Admin
 			_deliveryServiceRepository = deliveryServiceRepository;
 		}
 
-		//[HttpGet]
-		//public async Task<IActionResult> GetByDelivery(int deliveryId)
-		//{
-		//	var delivery = await _deliveryServiceRepository.GetById(deliveryId);
-		//	var products = delivery.Range;
+		[HttpGet]
+		public IActionResult Create(int deliveryId)
+		{
+			var model = new ProductCreateModel
+			{
+				DeliveryId = deliveryId
+			};
+			
+			return View(model);
+		}
 
-		//	return View(products);
-		//}
+		[HttpPost]
+		public async Task<IActionResult> Create(ProductCreateModel model)
+		{
+			if (ModelState.IsValid)
+			{
+				var newProduct = new Product
+				{
+					Name = model.Name,
+					Desciption = model.Description,
+					Price = model.Price
+				};
+
+				var delivery = await _deliveryServiceRepository.GetById(model.DeliveryId);
+				delivery.Range.Add(newProduct);
+
+				await _deliveryServiceRepository.Update(delivery);
+
+				return RedirectToAction("GetById", "Deliveries", new { id = delivery.Id });
+			}
+
+			return View();
+		}
 	}
 }
