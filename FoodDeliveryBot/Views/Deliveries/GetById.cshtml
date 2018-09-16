@@ -1,0 +1,24 @@
+﻿@model FoodDeliveryBot.Models.DeliveryService
+@{
+    ViewData["Title"] = "GetById";
+    Layout = "~/Views/_Layout.cshtml";
+}
+
+<h2>@Model.Name</h2>
+<div>
+    <table class="table">
+        <thead>
+            <th>Id</th>
+            <th>Название</th>
+        </thead>
+        <tbody>
+            @foreach (var product in Model)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
