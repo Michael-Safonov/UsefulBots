@@ -39,7 +39,8 @@ namespace FoodDeliveryBot.Dialogs
 				CheckOrderOwnerStep,
 				
 			});
-			
+
+			this.Dialogs.Add(AddressDialog.Id, AddressDialog.Instance);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -58,8 +59,9 @@ namespace FoodDeliveryBot.Dialogs
 				var attachment = await GetReceiptCardSession(orderSession);
 				await dc.Context.SendActivity(MessageFactory.Attachment(attachment));
 
-				UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
-				await dc.End();
+				//UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
+				//await dc.End();
+				await dc.Begin(AddressDialog.Id);
 			}
 			else
 			{
