@@ -36,7 +36,7 @@ namespace FoodDeliveryBot.Controllers
         [HttpGet("generate/{count}")]
         public async Task<string> RegenerageData(int count)
         {
-            DbManager.DropCollection("DeliveryServices");
+            await DbManager.DropCollection("DeliveryServices");
 
             var deliveryServices = GetDeliveryServices(count);
 
@@ -52,7 +52,7 @@ namespace FoodDeliveryBot.Controllers
 		public async Task<string> DropAndFillWithStubs(int count)
 		{
 			// дропаем базу
-			DbManager.DropCollection("DeliveryServices");
+			await DbManager.DropCollection("DeliveryServices");
 
 			foreach (var service in DataStub.Deliveries)
 			{
@@ -77,7 +77,7 @@ namespace FoodDeliveryBot.Controllers
 		public async Task<string> DropOrders()
 		{
 			// дропаем базу
-			DbManager.DropCollection("OrderSessions");
+			await DbManager.DropCollection("OrderSessions");
 
 			return "Complete!";
 		}

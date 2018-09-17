@@ -42,13 +42,13 @@ namespace FoodDeliveryBot.Dialogs
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				ChoiceDeliveryServiceStep,
-				SetDeliveryServiceStep
+				SetDeliveryServiceStep,
 			});
 
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
-		private async Task ChoiceDeliveryServiceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
+        private async Task ChoiceDeliveryServiceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			//todo: сделать полем класса?
 			var deliveryServices = await this.deliveryServiceRepository.GetAll();
@@ -74,6 +74,7 @@ namespace FoodDeliveryBot.Dialogs
 
 			//сохраняем обновленный OrderSession в БД
 			await this.orderSessionRepository.Update(sessionInfo.OrderSession);
+			await dc.End();
 		}
 	}
 }

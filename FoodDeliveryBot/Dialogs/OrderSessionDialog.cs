@@ -43,9 +43,8 @@ namespace FoodDeliveryBot.Dialogs
 		{
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
-				ChoiceCommandStep,
-				SetCommandStep,
-				ReplaceStep
+				GetOrderType,
+				BeginNewOrExistDialog,
 			});
 
 			this.Dialogs.Add(JoinOrderDialog.Id, JoinOrderDialog.Instance);
@@ -53,7 +52,7 @@ namespace FoodDeliveryBot.Dialogs
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
-		private async Task ChoiceCommandStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
+		private async Task GetOrderType (DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var choiceList = this.startMenuList.Select(i => i.Description).ToList();
 			await dc.Prompt("choicePrompt", "Доступные команды", new ChoicePromptOptions
@@ -63,29 +62,23 @@ namespace FoodDeliveryBot.Dialogs
 			});
 		}
 
-		private async Task SetCommandStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
+		private async Task BeginNewOrExistDialog(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var choice = (FoundChoice)args["Value"];
-			
-			// Выбрали ветку "Новый заказ"
+
 			if (startMenuList[choice.Index].DialogName == "newOrder")
 			{
 				//Стартуем новый заказ
 				OrderSession newOrder = new OrderSession()
 				{
 					OrderSessionId = Guid.NewGuid(),
-					// todo: добавить метод генерации пин-кода 
 					Pincode = PinCodeGenerator.GetPinCode(),
-					// Получаем UserId
 					OwnerUserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId")
 				};
 
-				// todo: записываем объект в БД
 				await orderSessionRepository.Insert(newOrder);
 
-				// Получаем инфо о сессии из стейта диалога
 				var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
-
 				sessionInfo.OrderSession = newOrder;
 
 			    await dc.Context.SendActivity($"Пин код: {sessionInfo.OrderSession.Pincode}");
@@ -96,11 +89,6 @@ namespace FoodDeliveryBot.Dialogs
 			{
 				await dc.Begin(JoinOrderDialog.Id);
 			}
-		}
-
-		private async Task ReplaceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
-		{
-			await dc.Replace(Id);
 		}
 	}
 }
