@@ -14,7 +14,7 @@ using Microsoft.Recognizers.Text;
 
 namespace FoodDeliveryBot
 {
-    public class EchoBot : IBot
+    public class FoodBoyBot : IBot
 	{
         private readonly ProductsDialog _productsDialog;
         private readonly EndOrderSessionDialog _endOrderSessionDialog;
@@ -23,14 +23,13 @@ namespace FoodDeliveryBot
         private const string MainMenuDialogId = "mainMenu";
 		private DialogSet _dialogs { get; }
 
-        public EchoBot(OrderSessionDialog orderDialog, EndOrderSessionDialog endOrderSessionDialog, ProductsDialog productsDialog)
+        public FoodBoyBot(OrderSessionDialog orderDialog, EndOrderSessionDialog endOrderSessionDialog, ProductsDialog productsDialog)
         {
             _orderDialog = orderDialog ?? throw new ArgumentNullException(nameof(orderDialog));
-            _endOrderSessionDialog = endOrderSessionDialog;
-            _productsDialog = productsDialog;
+            _endOrderSessionDialog = endOrderSessionDialog ?? throw new ArgumentNullException(nameof(endOrderSessionDialog)); ;
+            _productsDialog = productsDialog ?? throw new ArgumentNullException(nameof(productsDialog)); ;
 
             _dialogs = ComposeMainDialog();
-            
         }
 
 		public async Task OnTurn(ITurnContext context)
