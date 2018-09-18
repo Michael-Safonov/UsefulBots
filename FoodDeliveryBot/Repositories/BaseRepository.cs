@@ -18,32 +18,32 @@
 
         public async Task<IEnumerable<TEntity>> GetAll()
         {
-            return await Task.FromResult(collection.FindAll());
+            return await Task.Run(() => collection.FindAll());
         }
 
         public async Task<TEntity> Get(BsonValue id)
         {
-            return await Task.FromResult(collection.FindById(id));
+            return await Task.Run(() => collection.FindById(id));
         }
 
         public virtual async Task<BsonValue> Insert(TEntity entity)
         {
-            return await Task.FromResult(collection.Insert(entity));
+            return await Task.Run(() => collection.Insert(entity));
         }
 
         public async Task<bool> Update(TEntity entity)
         {
-            return await Task.FromResult(collection.Update(entity));
+            return await Task.Run(() => collection.Update(entity));
         }
 
         public virtual async Task<bool> Upsert(TEntity entity)
         {
-            return await Task.FromResult(collection.Upsert(entity));
+            return await Task.Run(() => collection.Upsert(entity));
         }
 
         public async Task<bool> Delete(BsonValue id)
         {
-            return await Task.FromResult(collection.Delete(id));
+            return await Task.Run(() => collection.Delete(id));
         }
     }
 }
