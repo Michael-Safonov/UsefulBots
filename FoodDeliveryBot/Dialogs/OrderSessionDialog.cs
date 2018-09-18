@@ -1,43 +1,43 @@
-﻿using FoodDeliveryBot.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
+using FoodDeliveryBot.Utils;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FoodDeliveryBot.Utils;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class OrderSessionDialog : DialogContainer
+    public class OrderSessionDialog : DialogContainer
 	{
-		private class StartMenuItem
+        private readonly DeliveryServiceDialog _deliveryServiceDialog;
+        private readonly JoinOrderDialog _joinOrderDialog;
+        private readonly List<StartMenuItem> startMenuList = new List<StartMenuItem>()
 		{
-			public string DialogName { get; set; }
-			public string Description { get; set; }
-		}
-
-		private readonly List<StartMenuItem> startMenuList = new List<StartMenuItem>()
-		{
-			new StartMenuItem() { Description = "Новый заказ", DialogName = "newOrder" },
-			new StartMenuItem() { Description = "Существующий заказ", DialogName = "existOrder" },			
+			new StartMenuItem { Description = "Новый заказ", DialogName = "newOrder" },
+			new StartMenuItem { Description = "Существующий заказ", DialogName = "existOrder" },
 		};
 
-		private readonly OrderSessionRepository orderSessionRepository;
+		private readonly OrderSessionRepository _orderSessionRepository;
 
 		public const string Id = "orderSession";
 
-		public static OrderSessionDialog Instance { get; } = new OrderSessionDialog(new OrderSessionRepository("OrderSessions"));
-
-		private OrderSessionDialog(OrderSessionRepository orderSessionRepository) : base(Id)
+		public OrderSessionDialog(
+            OrderSessionRepository orderSessionRepository,
+            JoinOrderDialog joinOrderDialog,
+            DeliveryServiceDialog deliveryServiceDialog) : base(Id)
 		{
-			this.orderSessionRepository = orderSessionRepository;
-			InitOrderSessionDialog();
-		}
+			_orderSessionRepository = orderSessionRepository;
+            _joinOrderDialog = joinOrderDialog;
+            _deliveryServiceDialog = deliveryServiceDialog;
+
+            InitOrderSessionDialog();
+        }
 
 		private void InitOrderSessionDialog()
 		{
@@ -47,16 +47,16 @@ namespace FoodDeliveryBot.Dialogs
 				BeginNewOrExistDialog,
 			});
 
-			this.Dialogs.Add(JoinOrderDialog.Id, JoinOrderDialog.Instance);
-			this.Dialogs.Add(DeliveryServiceDialog.Id, DeliveryServiceDialog.Instance);			
+			this.Dialogs.Add(JoinOrderDialog.Id, _joinOrderDialog);
+			this.Dialogs.Add(DeliveryServiceDialog.Id, _deliveryServiceDialog);
 			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
 		private async Task GetOrderType (DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
-			var choiceList = this.startMenuList.Select(i => i.Description).ToList();
+			var choiceList = startMenuList.Select(i => i.Description).ToList();
 			await dc.Prompt("choicePrompt", "Доступные команды", new ChoicePromptOptions
-			{	
+			{
 				Choices = ChoiceFactory.ToChoices(choiceList),
 				RetryPromptActivity = MessageFactory.SuggestedActions(choiceList, "Пожалуйста, выберите команду") as Activity,
 			});
@@ -69,20 +69,19 @@ namespace FoodDeliveryBot.Dialogs
 			if (startMenuList[choice.Index].DialogName == "newOrder")
 			{
 				//Стартуем новый заказ
-				OrderSession newOrder = new OrderSession()
+				var newOrder = new OrderSession()
 				{
 					OrderSessionId = Guid.NewGuid(),
 					Pincode = PinCodeGenerator.GetPinCode(),
 					OwnerUserId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId")
 				};
 
-				await orderSessionRepository.Insert(newOrder);
+                await _orderSessionRepository.Insert(newOrder);
 
 				var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 				sessionInfo.OrderSession = newOrder;
 
 			    await dc.Context.SendActivity($"Пин код: {sessionInfo.OrderSession.Pincode}");
-
                 await dc.Begin(DeliveryServiceDialog.Id);
 			}
 			else
@@ -90,5 +89,11 @@ namespace FoodDeliveryBot.Dialogs
 				await dc.Begin(JoinOrderDialog.Id);
 			}
 		}
-	}
+
+        private class StartMenuItem
+        {
+            public string DialogName { get; set; }
+            public string Description { get; set; }
+        }
+    }
 }

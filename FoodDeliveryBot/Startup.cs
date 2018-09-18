@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using FoodDeliveryBot.Dialogs;
 using FoodDeliveryBot.Middleware;
 using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
@@ -16,7 +17,7 @@ using Serilog;
 
 namespace FoodDeliveryBot
 {
-	public class Startup
+    public class Startup
 	{
 		// This method gets called by the runtime. Use this method to add services to the container.
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -44,11 +45,11 @@ namespace FoodDeliveryBot
 			{
 				options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
 
-				// The CatchExceptionMiddleware provides a top-level exception handler for your bot. 
-				// Any exceptions thrown by other Middleware, or by your OnTurn method, will be 
-				// caught here. To facillitate debugging, the exception is sent out, via Trace, 
+				// The CatchExceptionMiddleware provides a top-level exception handler for your bot.
+				// Any exceptions thrown by other Middleware, or by your OnTurn method, will be
+				// caught here. To facillitate debugging, the exception is sent out, via Trace,
 				// to the emulator. Trace activities are NOT displayed to users, so in addition
-				// an "Ooops" message is sent. 
+				// an "Ooops" message is sent.
 				options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
 				{
 					Log.Error(exception, "Exception");
@@ -59,16 +60,16 @@ namespace FoodDeliveryBot
 				}));
 
 				// The Memory Storage used here is for local bot debugging only. When the bot
-				// is restarted, anything stored in memory will be gone. 
+				// is restarted, anything stored in memory will be gone.
 				IStorage dataStore = new MemoryStorage();
 
-				// The File data store, shown here, is suitable for bots that run on 
-				// a single machine and need durable state across application restarts.                 
+				// The File data store, shown here, is suitable for bots that run on
+				// a single machine and need durable state across application restarts.
 				// IStorage dataStore = new FileStorage(System.IO.Path.GetTempPath());
 
-				// For production bots use the Azure Table Store, Azure Blob, or 
-				// Azure CosmosDB storage provides, as seen below. To include any of 
-				// the Azure based storage providers, add the Microsoft.Bot.Builder.Azure 
+				// For production bots use the Azure Table Store, Azure Blob, or
+				// Azure CosmosDB storage provides, as seen below. To include any of
+				// the Azure based storage providers, add the Microsoft.Bot.Builder.Azure
 				// Nuget package to your solution. That package is found at:
 				//      https://www.nuget.org/packages/Microsoft.Bot.Builder.Azure/
 
@@ -82,10 +83,18 @@ namespace FoodDeliveryBot
 			services.AddDirectoryBrowser();
 			services.AddMvc();
 
-			services.AddTransient<DeliveryServiceRepository>(provider => new DeliveryServiceRepository("DeliveryServices"));
-			services.AddTransient<OrderSessionRepository>(provider => new OrderSessionRepository("OrderSessions"));
-			services.AddTransient<UserOrderRepository>(provider => new UserOrderRepository("UserOrders"));
+            //Регистрация репозиториев
+            services.AddTransient<DeliveryServiceRepository>();
+            services.AddTransient<OrderSessionRepository>();
+            services.AddTransient<UserOrderRepository>();
 
+            //Регистрация диалогов
+            services.AddSingleton<OrderSessionDialog>();
+            services.AddSingleton<DeliveryServiceDialog>();
+            services.AddSingleton<AddressDialog>();
+            services.AddSingleton<EndOrderSessionDialog>();
+            services.AddSingleton<JoinOrderDialog>();
+            services.AddSingleton<ProductsDialog>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

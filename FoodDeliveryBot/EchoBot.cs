@@ -14,11 +14,24 @@ using Microsoft.Recognizers.Text;
 
 namespace FoodDeliveryBot
 {
-	public class EchoBot : IBot
+    public class EchoBot : IBot
 	{
-		private const string MainMenuDialogId = "mainMenu";
-		private DialogSet _dialogs { get; } = ComposeMainDialog();
+        private readonly ProductsDialog _productsDialog;
+        private readonly EndOrderSessionDialog _endOrderSessionDialog;
+        private readonly OrderSessionDialog _orderDialog;
 
+        private const string MainMenuDialogId = "mainMenu";
+		private DialogSet _dialogs { get; }
+
+        public EchoBot(OrderSessionDialog orderDialog, EndOrderSessionDialog endOrderSessionDialog, ProductsDialog productsDialog)
+        {
+            _orderDialog = orderDialog ?? throw new ArgumentNullException(nameof(orderDialog));
+            _endOrderSessionDialog = endOrderSessionDialog;
+            _productsDialog = productsDialog;
+
+            _dialogs = ComposeMainDialog();
+            
+        }
 
 		public async Task OnTurn(ITurnContext context)
 		{
@@ -31,33 +44,34 @@ namespace FoodDeliveryBot
 				var dc = _dialogs.CreateContext(context, conversationInfo);
 
 				// Continue any current dialog.
-				
+
 				await dc.Continue();
 
 				if (dc.Context.Responded)
 				{
 					return;
 				}
-				
+
 				await dc.Begin(MainMenuDialogId);
 			}
 		}
 
-		private static DialogSet ComposeMainDialog()
+		private DialogSet ComposeMainDialog()
 		{
 			var dialogs = new DialogSet();
 
 			dialogs.Add(MainMenuDialogId, new WaterfallStep[]
-			{		
-				BeginOrderSessionDialog,		
+			{
+				BeginOrderSessionDialog,
 				ShowMainMenu,
+                //Выбор продуктов, статистика, отмена/завершение диалога
 				MainMenuProcessing,
 				GoToFirstStep
 			});
 
-			dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
-			dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
-			dialogs.Add(EndOrderSessionDialog.Id, EndOrderSessionDialog.Instance);
+			dialogs.Add(OrderSessionDialog.Id, _orderDialog);
+			dialogs.Add(ProductsDialog.Id, _productsDialog);
+			dialogs.Add(EndOrderSessionDialog.Id, _endOrderSessionDialog);
 			dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 			return dialogs;
 		}
@@ -73,7 +87,7 @@ namespace FoodDeliveryBot
 
 			switch (choice.Value)
 			{
-				case MainMenu.ChooseProducts: 
+				case MainMenu.ChooseProducts:
 					await dc.Begin(ProductsDialog.Id);
 					break;
 				case MainMenu.Statistics:

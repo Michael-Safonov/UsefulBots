@@ -6,7 +6,7 @@ namespace FoodDeliveryBot.Repositories
 {
     public class OrderSessionRepository : BaseRepository<OrderSession>
     {
-        public OrderSessionRepository(string collectionName) : base(collectionName)
+        public OrderSessionRepository() : base("OrderSessions")
         {
         }
 

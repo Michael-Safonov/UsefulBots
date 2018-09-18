@@ -8,7 +8,7 @@ namespace FoodDeliveryBot.Repositories
 {
     public class UserOrderRepository : BaseRepository<UserOrder>
     {
-        public UserOrderRepository(string collectionName) : base(collectionName)
+        public UserOrderRepository() : base("UserOrders")
         {
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bogus;
@@ -7,9 +6,7 @@ using FoodDeliveryBot.DataStubs;
 using FoodDeliveryBot.Db;
 using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.Options;
 
 namespace FoodDeliveryBot.Controllers
 {
@@ -49,7 +46,7 @@ namespace FoodDeliveryBot.Controllers
         }
 
 		[HttpGet("stubs")]
-		public async Task<string> DropAndFillWithStubs(int count)
+		public async Task<string> DropAndFillWithStubs()
 		{
 			// дропаем базу
 			await DbManager.DropCollection("DeliveryServices");
@@ -59,7 +56,7 @@ namespace FoodDeliveryBot.Controllers
 				var deliveryService = new DeliveryService
 				{
 					Name = service.Name,
-					Range = service.Products?.Select(p => new Product
+					Products = service.Products?.Select(p => new Product
 					{
 						Name = p.Name,
 						Desciption = p.Description,
@@ -89,7 +86,7 @@ namespace FoodDeliveryBot.Controllers
             return new Faker<DeliveryService>()
                 .RuleFor(d => d.Name, f => f.Company.CompanyName())
                 .RuleFor(d => d.Id, f => currentId++)
-                .RuleFor(u => u.Range,
+                .RuleFor(u => u.Products,
                     f => new Faker<Product>()
                         .RuleFor(p => p.Name, f1 => f1.PickRandom(Food))
                         .RuleFor(p => p.Price, f1 => decimal.Parse(f1.Commerce.Price(70, 1000)))

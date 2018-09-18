@@ -4,9 +4,10 @@ using LiteDB;
 
 namespace FoodDeliveryBot.Repositories
 {
-	public class DeliveryServiceRepository : BaseRepository<DeliveryService>
+    public class DeliveryServiceRepository : BaseRepository<DeliveryService>
 	{
-		public DeliveryServiceRepository(string collectionName) : base(collectionName)
+        //"DeliveryServices" вынести в const и использовать везде
+        public DeliveryServiceRepository() : base("DeliveryServices")
 		{
 		}
 

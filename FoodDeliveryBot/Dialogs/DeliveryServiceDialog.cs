@@ -1,39 +1,28 @@
-﻿using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Prompts.Choices;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Bot.Schema;
-using Microsoft.Recognizers.Text;
 using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Prompts.Choices;
+using Microsoft.Bot.Schema;
+using Microsoft.Recognizers.Text;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class DeliveryServiceDialog : DialogContainer
+    public class DeliveryServiceDialog : DialogContainer
 	{
-		private readonly DeliveryServiceRepository deliveryServiceRepository;
-		private readonly OrderSessionRepository orderSessionRepository;
+		private readonly DeliveryServiceRepository _deliveryServiceRepository;
+		private readonly OrderSessionRepository _orderSessionRepository;
 
 		public const string Id = "choiceDeliveryService";
 
-		public static DeliveryServiceDialog Instance
+		public DeliveryServiceDialog(DeliveryServiceRepository deliveryServiceRepository, OrderSessionRepository orderSessionRepository): base(Id)
 		{
-			get
-			{
-				return new DeliveryServiceDialog(
-						new DeliveryServiceRepository("DeliveryServices"),
-						new OrderSessionRepository("OrderSessions")
-					);
-			}
-		}		
+			_deliveryServiceRepository = deliveryServiceRepository;
+			_orderSessionRepository = orderSessionRepository;
 
-		private DeliveryServiceDialog(DeliveryServiceRepository deliveryServiceRepository, OrderSessionRepository orderSessionRepository): base(Id)
-		{
-			this.deliveryServiceRepository = deliveryServiceRepository;
-			this.orderSessionRepository = orderSessionRepository;
 			InitDeliveryServiceDialog();
 		}
 
@@ -51,7 +40,7 @@ namespace FoodDeliveryBot.Dialogs
         private async Task ChoiceDeliveryServiceStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			//todo: сделать полем класса?
-			var deliveryServices = await this.deliveryServiceRepository.GetAll();
+			var deliveryServices = await _deliveryServiceRepository.GetAll();
 
 			var choiceList = deliveryServices.Select(ds => ds.Name).ToList();
 			await dc.Prompt("choicePrompt", "Откуда закажем?", new ChoicePromptOptions
@@ -67,13 +56,13 @@ namespace FoodDeliveryBot.Dialogs
 
 			//todo: тягали все сервисы в методе выше
 			// Получаем из БД нужный сервис доставки
-			var deliveryService = await this.deliveryServiceRepository.GetByName(choice.Value);
-			
+			var deliveryService = await _deliveryServiceRepository.GetByName(choice.Value);
+
 			var sessionInfo = UserState<SessionInfo>.Get(dc.Context);
 			sessionInfo.OrderSession.DeliveryService = deliveryService;
 
 			//сохраняем обновленный OrderSession в БД
-			await this.orderSessionRepository.Update(sessionInfo.OrderSession);
+			await _orderSessionRepository.Update(sessionInfo.OrderSession);
 			await dc.End();
 		}
 	}

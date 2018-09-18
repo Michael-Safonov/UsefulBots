@@ -1,42 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Bot;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Recognizers.Text;
-using Microsoft.Bot.Builder.Prompts.Choices;
 using FoodDeliveryBot.Models;
-using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Schema;
-using System;
 using FoodDeliveryBot.Repositories;
-using Microsoft.Bot.Builder.Adapters;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Prompts.Choices;
+using Microsoft.Recognizers.Text;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class ProductsDialog : DialogContainer
+    public class ProductsDialog : DialogContainer
 	{
 		public const string Id = "productsDialog";
 		public const string OrderedProductsList = "orderedProductsList";
-		public static ProductsDialog Instance { get; } = new ProductsDialog(new UserOrderRepository("UserOrders"));
 
-
-	    private readonly UserOrderRepository userOrderRepository;
+	    private readonly UserOrderRepository _userOrderRepository;
         private readonly List<string> _actions = new List<string>
         {
             "Завершить",
             "Отменить",
         };
 
-		private ProductsDialog(UserOrderRepository userOrderRepository) : base(Id)
+		public ProductsDialog(UserOrderRepository userOrderRepository) : base(Id)
 		{
-		    this.userOrderRepository = userOrderRepository;
+		    _userOrderRepository = userOrderRepository;
 
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				async (dc, args, next) =>
 				{
-				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range;
+				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Products;
 
 					if (args is null || !args.ContainsKey(OrderedProductsList))
 					{
@@ -54,7 +48,7 @@ namespace FoodDeliveryBot.Dialogs
 				},
 				async (dc, args, next) =>
 				{
-				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range;
+				    var productList = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Products;
 
                     var choice = (FoundChoice)args["Value"];
 					var option = GetMainMenu(productList)[choice.Index];
@@ -77,10 +71,10 @@ namespace FoodDeliveryBot.Dialogs
 
 						    // sessioninfo.UserOrder = userOrder;
 
-						    await this.userOrderRepository.Insert(userOrder);
+						    await this._userOrderRepository.Insert(userOrder);
 
                             await dc.Context.SendActivity("Заказ завершен. Спасибо!");							
-							
+
 							if (dc.Context.Activity.From.Id == sessioninfo.OrderSession.OwnerUserId)
 								await dc.End(new Dictionary<string, object>());
 							else
@@ -106,7 +100,7 @@ namespace FoodDeliveryBot.Dialogs
 					}
 					else
                     {
-                        var product = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Range[choice.Index];
+                        var product = UserState<SessionInfo>.Get(dc.Context).OrderSession.DeliveryService.Products[choice.Index];
 
 						cart.Add(product);
 						 var total = cart.Sum(x => x.Price);
