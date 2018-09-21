@@ -16,8 +16,9 @@ namespace FoodDeliveryBot.Dialogs
     public class OrderSessionDialog : DialogContainer
 	{
         private readonly DeliveryServiceDialog _deliveryServiceDialog;
+        private readonly MainMenuDialog _mainMenuDialog;
         private readonly JoinOrderDialog _joinOrderDialog;
-        private readonly List<StartMenuItem> startMenuList = new List<StartMenuItem>()
+        private readonly List<StartMenuItem> startMenuList = new List<StartMenuItem>
 		{
 			new StartMenuItem { Description = "Новый заказ", DialogName = "newOrder" },
 			new StartMenuItem { Description = "Существующий заказ", DialogName = "existOrder" },
@@ -30,10 +31,12 @@ namespace FoodDeliveryBot.Dialogs
 		public OrderSessionDialog(
             OrderSessionRepository orderSessionRepository,
             JoinOrderDialog joinOrderDialog,
+            MainMenuDialog mainMenuDialog,
             DeliveryServiceDialog deliveryServiceDialog) : base(Id)
 		{
 			_orderSessionRepository = orderSessionRepository;
             _joinOrderDialog = joinOrderDialog;
+            _mainMenuDialog = mainMenuDialog;
             _deliveryServiceDialog = deliveryServiceDialog;
 
             InitOrderSessionDialog();
@@ -45,14 +48,22 @@ namespace FoodDeliveryBot.Dialogs
 			{
 				GetOrderType,
 				BeginNewOrExistDialog,
-			});
+                BeginMainMenuDialog,
+                EndDialog
+            });
 
 			this.Dialogs.Add(JoinOrderDialog.Id, _joinOrderDialog);
-			this.Dialogs.Add(DeliveryServiceDialog.Id, _deliveryServiceDialog);
-			this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
+            this.Dialogs.Add(MainMenuDialog.Id, _mainMenuDialog);
+            this.Dialogs.Add(DeliveryServiceDialog.Id, _deliveryServiceDialog);
+            this.Dialogs.Add("choicePrompt", new ChoicePrompt(Culture.English));
 		}
 
-		private async Task GetOrderType (DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
+        private async Task BeginMainMenuDialog(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
+        {
+            await dc.Begin(MainMenuDialog.Id);
+        }
+
+        private async Task GetOrderType(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var choiceList = startMenuList.Select(i => i.Description).ToList();
 			await dc.Prompt("choicePrompt", "Доступные команды", new ChoicePromptOptions
@@ -90,6 +101,10 @@ namespace FoodDeliveryBot.Dialogs
 			}
 		}
 
+        private async Task EndDialog(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
+        {
+            await dc.End();
+        }
         private class StartMenuItem
         {
             public string DialogName { get; set; }

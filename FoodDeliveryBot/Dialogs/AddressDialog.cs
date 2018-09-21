@@ -11,16 +11,12 @@ namespace FoodDeliveryBot.Dialogs
 {
     public class AddressDialog : DialogContainer
 	{
-        private readonly OrderSessionDialog _orderDialog;
 		private readonly UserOrderRepository _userOrderRepository;
 
 		public const string Id = "getAddress";
 
-		public AddressDialog(
-            OrderSessionDialog orderDialog,
-			UserOrderRepository userOrderRepository) : base(Id)
+		public AddressDialog(UserOrderRepository userOrderRepository) : base(Id)
 		{
-            _orderDialog = orderDialog;
 			_userOrderRepository = userOrderRepository;
 
 			InitDeliveryServiceDialog();
@@ -34,7 +30,6 @@ namespace FoodDeliveryBot.Dialogs
 				SetAddressStep
 			});
 
-            this.Dialogs.Add(OrderSessionDialog.Id, _orderDialog);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -50,7 +45,6 @@ namespace FoodDeliveryBot.Dialogs
 
             var orderSession = UserState<SessionInfo>.Get(dc.Context).OrderSession;
 			var userOrders = (await _userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
-			//var products = orderSession.DeliveryService.Range;
 
             var messageList = userOrders.SelectMany(uo => uo.Products).GroupBy(x => x.Name)
                                         .Select(x => $"{x.Key} - {x.Count()} шт. ({x.Sum(p => p.Price)})\n").ToList();
@@ -62,9 +56,8 @@ namespace FoodDeliveryBot.Dialogs
 
             //var smsSender = new SMS.SmsSender();
             //smsSender.SendSms(orderSession.DeliveryService.Phone, message);
+
 			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
-			dc.ActiveDialog.State.Clear();
-			//await dc.Replace(OrderSessionDialog.Id);
 			await dc.End();
 		}
 	}

@@ -55,7 +55,7 @@ namespace FoodDeliveryBot
 					Log.Error(exception, "Exception");
 
 					await context.TraceActivity("EchoBot Exception", exception);
-					await context.SendActivity("Sorry, it looks like something went wrong!");
+					await context.SendActivity(exception.Message + exception.StackTrace);
 
 				}));
 
@@ -90,6 +90,7 @@ namespace FoodDeliveryBot
 
             //Регистрация диалогов
             services.AddSingleton<OrderSessionDialog>();
+            services.AddSingleton<MainMenuDialog>();
             services.AddSingleton<DeliveryServiceDialog>();
             services.AddSingleton<AddressDialog>();
             services.AddSingleton<EndOrderSessionDialog>();
