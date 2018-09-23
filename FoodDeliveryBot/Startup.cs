@@ -55,7 +55,11 @@ namespace FoodDeliveryBot
 					Log.Error(exception, "Exception");
 
 					await context.TraceActivity("EchoBot Exception", exception);
-					await context.SendActivity(exception.Message + exception.StackTrace);
+					#if (DEBUG) 
+						await context.SendActivity(exception.Message + exception.StackTrace);
+					#else
+						await context.SendActivity("Sorry, it looks like something went wrong!");
+					#endif
 
 				}));
 

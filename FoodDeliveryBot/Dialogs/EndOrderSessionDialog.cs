@@ -61,6 +61,7 @@ namespace FoodDeliveryBot.Dialogs
 			else
 			{
 				await dc.Prompt("textPrompt", "Вы не являетесь администратором заказа");
+				await dc.End();
 			}
 		}
 

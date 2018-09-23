@@ -49,7 +49,6 @@ namespace FoodDeliveryBot.Dialogs
 				GetOrderType,
 				BeginNewOrExistDialog,
                 BeginMainMenuDialog,
-                EndDialog
             });
 
 			this.Dialogs.Add(JoinOrderDialog.Id, _joinOrderDialog);
@@ -101,10 +100,6 @@ namespace FoodDeliveryBot.Dialogs
 			}
 		}
 
-        private async Task EndDialog(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
-        {
-            await dc.End();
-        }
         private class StartMenuItem
         {
             public string DialogName { get; set; }

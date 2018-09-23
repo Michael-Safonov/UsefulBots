@@ -85,6 +85,10 @@ namespace FoodDeliveryBot.Dialogs
             {
                 await dc.Replace(Id);
             }
+            else
+            {
+                await dc.End();
+            }
         }
     }
 }
