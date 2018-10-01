@@ -1,4 +1,5 @@
-﻿using LiteDB;
+﻿using System.Threading.Tasks;
+using LiteDB;
 
 namespace FoodDeliveryBot.Db
 {
@@ -13,9 +14,9 @@ namespace FoodDeliveryBot.Db
 			Instance = new LiteDatabase(ConnectionString);
 		}
 
-	    public static bool DropCollection(string collectionName)
+	    public static async Task<bool> DropCollection(string collectionName)
 	    {
-	        return Instance.DropCollection(collectionName);
+	        return await Task.Run(() => Instance.DropCollection(collectionName));
 	    }
 	}
 }

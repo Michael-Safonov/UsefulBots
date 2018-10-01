@@ -4,9 +4,10 @@ using LiteDB;
 
 namespace FoodDeliveryBot.Repositories
 {
-	public class DeliveryServiceRepository : BaseRepository<DeliveryService>
+    public class DeliveryServiceRepository : BaseRepository<DeliveryService>
 	{
-		public DeliveryServiceRepository(string collectionName) : base(collectionName)
+        //"DeliveryServices" вынести в const и использовать везде
+        public DeliveryServiceRepository() : base("DeliveryServices")
 		{
 		}
 
@@ -32,12 +33,12 @@ namespace FoodDeliveryBot.Repositories
 
 		public async Task<DeliveryService> GetByName(string name)
 		{
-			return await Task.FromResult(collection.FindOne(s => s.Name == name));
+			return await Task.Run(() => collection.FindOne(s => s.Name == name));
 		}
 
 		public async Task<DeliveryService> GetById(int id)
 		{
-			return await Task.FromResult(collection.FindById(id));
+			return await Task.Run(() => collection.FindById(id));
 		}
 	}
 }

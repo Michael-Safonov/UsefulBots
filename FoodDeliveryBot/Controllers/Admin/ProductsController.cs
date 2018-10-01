@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodDeliveryBot.Controllers.Admin
 {
-	public class ProductsController : Controller
+    public class ProductsController : Controller
 	{
 		private readonly DeliveryServiceRepository _deliveryServiceRepository;
 
@@ -39,7 +39,7 @@ namespace FoodDeliveryBot.Controllers.Admin
 				};
 
 				var delivery = await _deliveryServiceRepository.GetById(model.DeliveryId);
-				delivery.Range.Add(newProduct);
+				delivery.Products.Add(newProduct);
 
 				await _deliveryServiceRepository.Update(delivery);
 

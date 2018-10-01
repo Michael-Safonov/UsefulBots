@@ -1,34 +1,31 @@
-﻿using FoodDeliveryBot.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class EndOrderSessionDialog : DialogContainer
+    public class EndOrderSessionDialog : DialogContainer
 	{
-		private readonly OrderSessionRepository orderSessionRepository;
-		private readonly UserOrderRepository userOrderRepository;
+        private readonly AddressDialog _addressDialog;
+
+		private readonly OrderSessionRepository _orderSessionRepository;
+		private readonly UserOrderRepository _userOrderRepository;
 
 		public const string Id = "endOrderSession";
 
-		public static EndOrderSessionDialog Instance
+		public EndOrderSessionDialog(OrderSessionRepository orderSessionRepository, UserOrderRepository userOrderRepository, AddressDialog addressDialog) : base(Id)
 		{
-			get
-			{
-				return new EndOrderSessionDialog(new OrderSessionRepository("OrderSessions"), new UserOrderRepository("UserOrders"));
-			}
-		}
+            _addressDialog = addressDialog;
 
-		private EndOrderSessionDialog(OrderSessionRepository orderSessionRepository, UserOrderRepository userOrderRepository) : base(Id)
-		{
-			this.orderSessionRepository = orderSessionRepository;
-			this.userOrderRepository = userOrderRepository;
+            _orderSessionRepository = orderSessionRepository;
+			_userOrderRepository = userOrderRepository;
+
 			InitEndOrderSessionDialog();
 		}
 
@@ -37,10 +34,10 @@ namespace FoodDeliveryBot.Dialogs
 			this.Dialogs.Add(Id, new WaterfallStep[]
 			{
 				CheckOrderOwnerStep,
-				
+
 			});
 
-			this.Dialogs.Add(AddressDialog.Id, AddressDialog.Instance);
+			this.Dialogs.Add(AddressDialog.Id, _addressDialog);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -50,28 +47,27 @@ namespace FoodDeliveryBot.Dialogs
 			var userId = dc.Context.Activity.From.Id ?? throw new Exception("Не нашел UserId");
 
 			if (orderSession.OwnerUserId == userId)
-			{	
+			{
 				// Сохраняем завершенный заказ
 				orderSession.IsCompleted = true;
-				await this.orderSessionRepository.Upsert(orderSession);
+				await _orderSessionRepository.Upsert(orderSession);
 
 				// Формируем чек
 				var attachment = await GetReceiptCardSession(orderSession);
 				await dc.Context.SendActivity(MessageFactory.Attachment(attachment));
 
-				//UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
-				//await dc.End();
 				await dc.Begin(AddressDialog.Id);
 			}
 			else
 			{
 				await dc.Prompt("textPrompt", "Вы не являетесь администратором заказа");
+				await dc.End();
 			}
 		}
 
 		private async Task<Attachment> GetReceiptCardSession(OrderSession orderSession)
-		{	
-			var userOrders = (await this.userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
+		{
+			var userOrders = (await _userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
 			var summaryOrder = userOrders.SelectMany(uo => uo.Products).Sum(p => p.Price);
 			var receipt = new ReceiptCard
 			{

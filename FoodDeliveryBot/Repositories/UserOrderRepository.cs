@@ -8,7 +8,7 @@ namespace FoodDeliveryBot.Repositories
 {
     public class UserOrderRepository : BaseRepository<UserOrder>
     {
-        public UserOrderRepository(string collectionName) : base(collectionName)
+        public UserOrderRepository() : base("UserOrders")
         {
         }
 
@@ -32,7 +32,7 @@ namespace FoodDeliveryBot.Repositories
 
         public async Task<IEnumerable<UserOrder>> GetBySessionId(Guid sessionId)
         {
-            return await Task.FromResult(collection.Find(uo => uo.SessionId == sessionId));
+            return await Task.Run(() => collection.Find(uo => uo.SessionId == sessionId));
         }
     }
 }

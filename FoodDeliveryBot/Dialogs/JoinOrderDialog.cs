@@ -1,27 +1,26 @@
-﻿using FoodDeliveryBot.Models;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
 using FoodDeliveryBot.Repositories;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class JoinOrderDialog : DialogContainer
+    public class JoinOrderDialog : DialogContainer
 	{
-		private readonly OrderSessionRepository orderSessionRepository;
+        private readonly ProductsDialog _productsDialog;
+        private readonly OrderSessionRepository _orderSessionRepository;
 
 		public const string Id = "joinOrder";
 
-		public static JoinOrderDialog Instance { get; } = new JoinOrderDialog(new OrderSessionRepository("OrderSessions"));
-
-		private JoinOrderDialog(OrderSessionRepository orderSessionRepository) : base(Id)
+		public JoinOrderDialog(OrderSessionRepository orderSessionRepository, ProductsDialog productsDialog) : base(Id)
 		{
-			this.orderSessionRepository = orderSessionRepository;
-			InitJoinOrderDialog();
-		}
+			_orderSessionRepository = orderSessionRepository;
+            _productsDialog = productsDialog;
+
+            InitJoinOrderDialog();
+        }
 
 		private void InitJoinOrderDialog()
 		{
@@ -30,7 +29,7 @@ namespace FoodDeliveryBot.Dialogs
 				GetOrderPincodeStep,
 				CheckOrderPincodeStep
 			});
-			this.Dialogs.Add(ProductsDialog.Id, ProductsDialog.Instance);
+			this.Dialogs.Add(ProductsDialog.Id, _productsDialog);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -42,7 +41,7 @@ namespace FoodDeliveryBot.Dialogs
 		private async Task CheckOrderPincodeStep(DialogContext dc, IDictionary<string, object> args = null, SkipStepFunction next = null)
 		{
 			var pincode = args["Value"] as string;
-            var orderSession = await this.orderSessionRepository.GetByPinCode(pincode);
+            var orderSession = await _orderSessionRepository.GetByPinCode(pincode);
 
 		    if (orderSession != null && orderSession.IsCompleted)
 		    {
@@ -51,10 +50,7 @@ namespace FoodDeliveryBot.Dialogs
 		    else if (orderSession != null && !orderSession.IsCompleted)
 			{
 				UserState<SessionInfo>.Get(dc.Context).OrderSession = orderSession;
-				//await dc.Context.SendActivity($"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
-				
-				// await dc.Prompt("textPrompt", $"Доставка из {orderSession.DeliveryService.Name}\nКод заказа: {orderSession.Pincode}");
-				// await dc.Begin(ProductsDialog.Id);
+                await dc.End();
 			}
 			else
 			{

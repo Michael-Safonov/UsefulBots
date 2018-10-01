@@ -1,42 +1,24 @@
-﻿using FoodDeliveryBot.Models;
-using FoodDeliveryBot.Repositories;
-using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Recognizers.Text;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FoodDeliveryBot.Models;
+using FoodDeliveryBot.Repositories;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
 
 namespace FoodDeliveryBot.Dialogs
 {
-	public class AddressDialog : DialogContainer
+    public class AddressDialog : DialogContainer
 	{
-		private readonly DeliveryServiceRepository deliveryServiceRepository;
-		private readonly OrderSessionRepository orderSessionRepository;
-		private readonly UserOrderRepository userOrderRepository;
+		private readonly UserOrderRepository _userOrderRepository;
 
 		public const string Id = "getAddress";
 
-		public static AddressDialog Instance
+		public AddressDialog(UserOrderRepository userOrderRepository) : base(Id)
 		{
-			get
-			{
-				return new AddressDialog(
-						new DeliveryServiceRepository("DeliveryServices"),
-						new OrderSessionRepository("OrderSessions"),
-						new UserOrderRepository("UserOrders")
-					);
-			}
-		}
+			_userOrderRepository = userOrderRepository;
 
-		private AddressDialog(DeliveryServiceRepository deliveryServiceRepository,
-			OrderSessionRepository orderSessionRepository,
-			UserOrderRepository userOrderRepository) : base(Id)
-		{
-			this.deliveryServiceRepository = deliveryServiceRepository;
-			this.orderSessionRepository = orderSessionRepository;
-			this.userOrderRepository = userOrderRepository;
 			InitDeliveryServiceDialog();
 		}
 
@@ -48,7 +30,6 @@ namespace FoodDeliveryBot.Dialogs
 				SetAddressStep
 			});
 
-            this.Dialogs.Add(OrderSessionDialog.Id, OrderSessionDialog.Instance);
 			this.Dialogs.Add("textPrompt", new TextPrompt());
 		}
 
@@ -63,8 +44,7 @@ namespace FoodDeliveryBot.Dialogs
 			var address = args["Value"] as string;
 
             var orderSession = UserState<SessionInfo>.Get(dc.Context).OrderSession;
-			var userOrders = (await this.userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
-			//var products = orderSession.DeliveryService.Range;
+			var userOrders = (await _userOrderRepository.GetBySessionId(orderSession.OrderSessionId)).ToList();
 
             var messageList = userOrders.SelectMany(uo => uo.Products).GroupBy(x => x.Name)
                                         .Select(x => $"{x.Key} - {x.Count()} шт. ({x.Sum(p => p.Price)})\n").ToList();
@@ -76,9 +56,8 @@ namespace FoodDeliveryBot.Dialogs
 
             //var smsSender = new SMS.SmsSender();
             //smsSender.SendSms(orderSession.DeliveryService.Phone, message);
+
 			UserState<SessionInfo>.Get(dc.Context).OrderSession = null;
-			dc.ActiveDialog.State.Clear();
-			//await dc.Replace(OrderSessionDialog.Id);
 			await dc.End();
 		}
 	}
